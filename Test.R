@@ -17,9 +17,6 @@ if(!require("tidyverse")) {
   library("tidyverse")
 }
 
-df_taxis=readLines(con="C:\\Users\\josep\\OneDrive\\Documentos\\GitHub\\Practica2BusinessIntelligence")
-
-
-
+df_taxis = read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=300000)
 
 str(df_taxis)
