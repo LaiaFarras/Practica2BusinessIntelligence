@@ -17,20 +17,18 @@ if(!require("tidyverse")) {
   library("tidyverse")
 }
 
-<<<<<<< HEAD
 
 if(!require("read.csv")) {
   install.packages("read.csv")
   library("read.csv")
 }
 
-
 ### LECTURA DEL ARCHIVO ###
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv",nrows=100000)
+df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv",nrows=300000)
 str(df_taxis)
 
-=======
-df_taxis = read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=300000)
+ggplot(data=df_taxis,aes(x='trip_distance',y='total_amount'))+
+  geom_point(aes(alpha=0.1))+
+  labs(title="PRECIO - DISTANCIA",subtitle="Relación entre la distancia y el precio")
 
-str(df_taxis)
->>>>>>> e58cfdbfdb1f48a2ecb3c78e5e311e5d9043aec5
+
