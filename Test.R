@@ -17,3 +17,14 @@ if(!require("tidyverse")) {
   library("tidyverse")
 }
 
+
+if(!require("read.csv")) {
+  install.packages("read.csv")
+  library("read.csv")
+}
+
+
+### LECTURA DEL ARCHIVO ###
+df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv",nrows=100000)
+str(df_taxis)
+
