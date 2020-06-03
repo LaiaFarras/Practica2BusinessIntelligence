@@ -17,3 +17,9 @@ if(!require("tidyverse")) {
   library("tidyverse")
 }
 
+df_taxis=readLines(con="C:\\Users\\josep\\OneDrive\\Documentos\\GitHub\\Practica2BusinessIntelligence")
+
+
+
+
+str(df_taxis)
