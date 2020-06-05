@@ -32,9 +32,15 @@ if(!require("scales")) {
   library("scales")
 }
 
+if(!require("ggraph")) {
+  install.packages("ggraph")
+  library("ggraph")
+}
+
+
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
-df_taxis=read.csv(file="yellow_tripdata_2019-01.csv", nrows=100000)
+df_taxis=read.csv(file="yellow_tripdata_2019-01.csv", nrows=1000)
 str(df_taxis)
 
 #Important varaibles:
@@ -71,17 +77,6 @@ finish_job = ymd_hms(df_taxis$tpep_dropoff_datetime)
 df_taxis=cbind(df_taxis,start_job,finish_job)
 str(df_taxis)
 
-ggplot(data=df_taxis, aes(nrows(start_job))) + geom_histogram
-
-
-start = as.POSIXct("2019/01/01  00:00:00", format="%Y/%m/%d  %H:%M:%S")
-end = as.POSIXct("2019/01/2  00:00:00", format="%Y/%m/%d  %H:%M:%S")
-
-start = as.numeric(start)
-end = as.numeric(end)
-
-end-start
-
 ggplot(df_taxis, aes(start_job)) + 
   geom_histogram(binwidth=2592000) +
   theme_bw() + xlab(NULL) +
@@ -90,29 +85,56 @@ ggplot(df_taxis, aes(start_job)) +
                    breaks=date_breaks(width="3 month"))+
   scale_y_log10() +
   theme(axis.text.x = element_text(angle = 90))
-                   
-ggplot(df_taxis, aes(start_job)) + 
-  geom_histogram(binwidth=3600) +
-  scale_x_datetime(limits = c(as.Date("2019-01-01 00:00:00"),as.Date("2019-01-01 24:00:00")))
 
- # theme_bw() + xlab(NULL) +
- # scale_x_datetime(labels = date_format("%Y/%m/%d %h/%m/%s"),
-  #                 limits = c(as.Date("2019-01-01 00:00:00"),
-  #                            as.Date("2019-01-01 24:00:00"),
-  #                 breaks=date_breaks(width="1 hour")))
+lims = as.POSIXct(strptime(c("2019-01-01 00:00:00","2019-02-01 00:00:00"),
+                format = "%Y-%M-%d %h:%m:%s"))
+
+
+#NO FUNCIONA
+ggplot(df_taxis, aes(start_job)) + 
+  geom_histogram(binwidth=86400) +
+  scale_x_datetime(limits = lims)
+
 
 
 #Outliers analysis
 
+#PLOT PRECIO_DISTANCIA
 
+#Hacer analisis para estudiar valores atípicos
+#Viajes con distancia 0
+#Viajes con valor 0
+#Valores negativos
 
+sum(is.null(df_taxis$trip_distance))
+sum(is.null(df_taxis$total_amount))
 
+df_taxis = filter(df_taxis, total_amount > 0)
 
-#PLOT
+ggplot(data=df_taxis,aes(x=trip_distance,y=total_amount))+
+  geom_point()+
+  labs(title="PRECIO - DISTANCIA",subtitle="Relación entre la distancia y el precio")+
+  geom_smooth(method='lm') +
+  xlim(0,50)
+  #scale_x_log10()
+  #ylim(0,500)
 
+str(df_taxis$PULocationID)
 
-ggplot(data=df_taxis,aes(x='trip_distance',y='total_amount'))+
-  geom_point(aes(alpha=0.1))+
-  labs(title="PRECIO - DISTANCIA",subtitle="Relación entre la distancia y el precio")
+#PLOT TRAYECTOS FREQUENTES
+taxi_zones_PU=sort(unique(df_taxis$PULocationID))
+taxi_zones_DO=sort(unique(df_taxis$DOLocationID))
+
+ggplot(df_taxis, aes(fct_infreq(factor(PULocationID)))) +
+  geom_bar() + 
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(title="ZONAS TLC MÁS FRECUENTES PARA INICIO",
+       subtitle="Número de viajes pedidos en cada zona")
+  
+ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
+  geom_bar() + 
+  theme(axis.text.x = element_text(angle = 90))+
+  labs(title="ZONAS TLC MÁS FRECUENTES PARA FINALIZACIÓN",
+       subtitle="Número de viajes terminados en cada zona")
 
 
