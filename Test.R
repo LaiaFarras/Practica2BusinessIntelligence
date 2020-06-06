@@ -40,7 +40,7 @@ if(!require("ggraph")) {
 
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
-df_taxis=read.csv(file="yellow_tripdata_2019-01.csv", nrows=1000)
+df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000)
 str(df_taxis)
 
 #Important varaibles:
@@ -138,3 +138,14 @@ ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
        subtitle="Número de viajes terminados en cada zona")
 
 
+## INFO ##
+#En comptes de carregarnos propina i surcharge per embussos
+
+#PROPOSTA PROPINES I ZONES I SOBRECÀRREGUES
+df_taxis1=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000)
+str(df_taxis1)
+
+ggplot(data=df_taxis1,aes(x=PULocationID,y=tip_amount))+
+  geom_point(color="Purple")+
+  labs(title="PRECIO - PICK UP POINT",subtitle="Relación entre el punto de PICK UP y la propina")+
+  geom_smooth(method="gam",color="lightpink")
