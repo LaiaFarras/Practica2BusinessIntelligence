@@ -37,6 +37,16 @@ if(!require("ggraph")) {
   library("ggraph")
 }
 
+if(!require("ggridges")) {
+  install.packages("ggridges")
+  library("ggridges")
+}
+
+if(!require("GGally")) {
+  install.packages("GGally")
+  library("GGally")
+}
+
 
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
@@ -59,11 +69,7 @@ str(df_taxis)
 #tolls_amount
 #total_amount
 
-df_taxis$VendorID = NULL
-df_taxis$store_and_fwd_flag = NULL
-df_taxis$tip_amount = NULL
-df_taxis$improvement_surcharge = NULL
-df_taxis$congestion_surcharge = NULL
+#df_taxis$VendorID = NULL
 
 str(df_taxis)
 
@@ -71,18 +77,20 @@ str(df_taxis)
 sum(is.na(df_taxis))
 # No
 
-start_job = ymd_hms(df_taxis$tpep_pickup_datetime)
-finish_job = ymd_hms(df_taxis$tpep_dropoff_datetime)
+start_job = mdy_hms(df_taxis$tpep_pickup_datetime)
+start_hour = hour(start_job)
+start_day = wday(start_job)
+finish_job = mdy_hms(df_taxis$tpep_dropoff_datetime)
   
-df_taxis=cbind(df_taxis,start_job,finish_job)
+df_taxis=cbind(df_taxis,start_job,start_day,start_hour,finish_job)
 str(df_taxis)
 
 ggplot(df_taxis, aes(start_job)) + 
-  geom_histogram(binwidth=2592000) +
+  geom_histogram(binwidth=604800) +
   theme_bw() + xlab(NULL) +
-  scale_x_datetime(labels = date_format("%Y/%m"),
+  scale_x_datetime(labels = date_format("%M/%Y"),
                    limits = NULL,
-                   breaks=date_breaks(width="3 month"))+
+                   breaks=date_breaks(width="1 week"))+
   scale_y_log10() +
   theme(axis.text.x = element_text(angle = 90))
 
@@ -94,8 +102,6 @@ lims = as.POSIXct(strptime(c("2019-01-01 00:00:00","2019-02-01 00:00:00"),
 ggplot(df_taxis, aes(start_job)) + 
   geom_histogram(binwidth=86400) +
   scale_x_datetime(limits = lims)
-
-
 
 #Outliers analysis
 
@@ -142,18 +148,31 @@ ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
 #En comptes de carregarnos propina i surcharge per embussos
 
 #PROPOSTA PROPINES I ZONES I SOBRECÀRREGUES
-df_taxis1=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000)
-str(df_taxis1)
 
-
-ggplot(data=df_taxis1,aes(x=PULocationID,y=tip_amount))+
+ggplot(data=df_taxis,aes(x=PULocationID,y=tip_amount))+
   geom_point(color="Purple")+
   labs(title="PRECIO - PICK UP POINT",subtitle="Relación entre el punto de PICK UP y la propina")+
   geom_smooth(method="gam",color="lightpink")
 
-ggplot(data=df_taxis1,aes(x=trip_distance,y=congestion_surcharge))+
+ggplot(data=df_taxis,aes(x=trip_distance,y=congestion_surcharge))+
   geom_point(color="Purple")+
   labs(title="SOBRECARGA POR CONGESTIÓN",subtitle="Relación entre la sobrecarga por congestión y la distancia de trayecto")+
   geom_smooth(method="gam",color="lightpink")
 
+str(df_taxis)
+# MODELO: PREDECIR PRECIO DEL VIAJE
+
+modelo <- lm(total_amount ~ passenger_count + trip_distance +  + asesinatos +
+               universitarios + heladas + area + densidad_pobl, data = df_taxis)
+summary(modelo)
+
+ggplot(df_taxis, aes(x=start_hour,y=congestion_surcharge,
+                     color=factor(start_day))) +
+  geom_point()+
+  geom_jitter()+
+  scale_fill_brewer(palette="Set3")
+
+ggplot(df_taxis, aes(x = start_hour, y = congestion_surcharge)) + geom_density_ridges()
+
+sum(is.na(df_taxis$start_day))
 
