@@ -145,7 +145,15 @@ ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
 df_taxis1=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000)
 str(df_taxis1)
 
+
 ggplot(data=df_taxis1,aes(x=PULocationID,y=tip_amount))+
   geom_point(color="Purple")+
   labs(title="PRECIO - PICK UP POINT",subtitle="Relación entre el punto de PICK UP y la propina")+
   geom_smooth(method="gam",color="lightpink")
+
+ggplot(data=df_taxis1,aes(x=trip_distance,y=congestion_surcharge))+
+  geom_point(color="Purple")+
+  labs(title="SOBRECARGA POR CONGESTIÓN",subtitle="Relación entre la sobrecarga por congestión y la distancia de trayecto")+
+  geom_smooth(method="gam",color="lightpink")
+
+
