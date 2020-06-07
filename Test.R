@@ -50,7 +50,7 @@ if(!require("GGally")) {
 
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000)
+df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=100000)
 str(df_taxis)
 
 #Important varaibles:
@@ -85,17 +85,17 @@ finish_job = mdy_hms(df_taxis$tpep_dropoff_datetime)
 df_taxis=cbind(df_taxis,start_job,start_day,start_hour,finish_job)
 str(df_taxis)
 
-ggplot(df_taxis, aes(start_job)) + 
-  geom_histogram(binwidth=604800) +
-  theme_bw() + xlab(NULL) +
-  scale_x_datetime(labels = date_format("%M/%Y"),
-                   limits = NULL,
-                   breaks=date_breaks(width="1 week"))+
-  scale_y_log10() +
-  theme(axis.text.x = element_text(angle = 90))
+#ggplot(df_taxis, aes(start_job)) + 
+  #geom_histogram(binwidth=604800) +
+  #theme_bw() + xlab(NULL) +
+  #scale_x_datetime(labels = date_format("%M/%Y"),
+    #               limits = NULL,
+    ~#               breaks=date_breaks(width="1 week"))+
+  #scale_y_log10() +
+  #theme(axis.text.x = element_text(angle = 90))
 
-lims = as.POSIXct(strptime(c("2019-01-01 00:00:00","2019-02-01 00:00:00"),
-                format = "%Y-%M-%d %h:%m:%s"))
+#lims = as.POSIXct(strptime(c("2019-01-01 00:00:00","2019-02-01 00:00:00"),
+                #format = "%Y-%M-%d %h:%m:%s"))
 
 
 #NO FUNCIONA
@@ -143,7 +143,6 @@ ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
   labs(title="ZONAS TLC MÁS FRECUENTES PARA FINALIZACIÓN",
        subtitle="Número de viajes terminados en cada zona")
 
-
 ## INFO ##
 #En comptes de carregarnos propina i surcharge per embussos
 
@@ -162,8 +161,19 @@ ggplot(data=df_taxis,aes(x=trip_distance,y=congestion_surcharge))+
 str(df_taxis)
 # MODELO: PREDECIR PRECIO DEL VIAJE
 
-modelo <- lm(total_amount ~ passenger_count + trip_distance +  + asesinatos +
-               universitarios + heladas + area + densidad_pobl, data = df_taxis)
+sum(is.na(df_taxis$total_amount))
+sum(is.na(df_taxis$passenger_count))
+sum(is.na(df_taxis$trip_distance))
+sum(is.na(df_taxis$start_hour))
+sum(is.na(df_taxis$start_day))
+
+df_taxis$passenger_count %>% drop_na(df_taxis$passenger_count)
+str(df_taxis$passenger_count)
+df %>% filter(!is.na(df_taxis$passenger_count))
+sum(is.na(df_taxis$passenger_count))
+
+modelo <- (lm(formula = total_amount ~ passenger_count + trip_distance +
+                start_hour + start_day , data = df_taxis))
 summary(modelo)
 
 ggplot(df_taxis, aes(x=start_hour,y=congestion_surcharge,
@@ -172,7 +182,5 @@ ggplot(df_taxis, aes(x=start_hour,y=congestion_surcharge,
   geom_jitter()+
   scale_fill_brewer(palette="Set3")
 
-ggplot(df_taxis, aes(x = start_hour, y = congestion_surcharge)) + geom_density_ridges()
 
-sum(is.na(df_taxis$start_day))
 
