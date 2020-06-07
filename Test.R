@@ -37,11 +37,6 @@ if(!require("ggraph")) {
   library("ggraph")
 }
 
-if(!require("ggridges")) {
-  install.packages("ggridges")
-  library("ggridges")
-}
-
 if(!require("GGally")) {
   install.packages("GGally")
   library("GGally")
@@ -50,7 +45,7 @@ if(!require("GGally")) {
 
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=100000)
+df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=600000)
 str(df_taxis)
 
 #Important varaibles:
@@ -96,12 +91,30 @@ str(df_taxis)
 
 #lims = as.POSIXct(strptime(c("2019-01-01 00:00:00","2019-02-01 00:00:00"),
                 #format = "%Y-%M-%d %h:%m:%s"))
+  
+df_taxis$start_job = as.Date(df_taxis$start_job)
 
+df_taxis %>% 
+  ggplot(aes(as.Date(start_job))) + 
+  geom_freqpoly(binwidth = 1)+ # 86400 seconds = 1 day
+  xlab('Time y-m')+
+  ylab('Number of trips')+
+  labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
 
-#NO FUNCIONA
-ggplot(df_taxis, aes(start_job)) + 
-  geom_histogram(binwidth=86400) +
-  scale_x_datetime(limits = lims)
+#Adjust limits for the following graph
+lims <- as.POSIXct(strptime(c("2019-07-01 00:00", "2019-08-04 00:00"), 
+                            format = "%Y-%m-%d %H:%M"))
+
+df_taxis %>% 
+  ggplot(aes(start_job)) + 
+  geom_freqpoly(binwidth = 86400)+ # 86400 seconds = 1 day
+  scale_y_log10()+
+  scale_x_datetime(limits=lims, breaks = date_breaks("day"),
+                   labels=date_format("%y-%m-%d"))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  xlab('Time y-m-d ')+
+  ylab('Number of trips')+
+  labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
 
 #Outliers analysis
 
