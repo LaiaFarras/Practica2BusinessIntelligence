@@ -1,7 +1,10 @@
 # Practica2BusinessIntelligence
 Pràctica de Business Intelligence Vanessa
-#HOLA JOSEP!
-a=12
+
+Laia Farràs
+Josep Font
+
+
 
 
 
