@@ -45,7 +45,7 @@ if(!require("GGally")) {
 
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=600000)
+df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=200000)
 str(df_taxis)
 
 #Important varaibles:
@@ -107,7 +107,7 @@ lims <- as.POSIXct(strptime(c("2019-07-01 00:00", "2019-08-04 00:00"),
 
 df_taxis %>% 
   ggplot(aes(start_job)) + 
-  geom_freqpoly(binwidth = 86400)+ # 86400 seconds = 1 day
+  geom_freqpoly(binwidth = 3600)+ # 86400 seconds = 1 day
   scale_y_log10()+
   scale_x_datetime(limits=lims, breaks = date_breaks("day"),
                    labels=date_format("%y-%m-%d"))+
@@ -149,7 +149,7 @@ ggplot(df_taxis, aes(fct_infreq(factor(PULocationID)))) +
   theme(axis.text.x = element_text(angle = 90))+
   labs(title="ZONAS TLC MÁS FRECUENTES PARA INICIO",
        subtitle="Número de viajes pedidos en cada zona")
-  
+
 ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
   geom_bar() + 
   theme(axis.text.x = element_text(angle = 90))+
