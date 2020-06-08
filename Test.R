@@ -164,12 +164,26 @@ ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
 ggplot(data=df_taxis,aes(x=PULocationID,y=tip_amount))+
   geom_point(color="Purple")+
   labs(title="PRECIO - PICK UP POINT",subtitle="Relación entre el punto de PICK UP y la propina")+
-  geom_smooth(method="gam",color="lightpink")
+  geom_smooth(method="lm",color="lightpink")
 
 ggplot(data=df_taxis,aes(x=trip_distance,y=congestion_surcharge))+
   geom_point(color="Purple")+
   labs(title="SOBRECARGA POR CONGESTIÓN",subtitle="Relación entre la sobrecarga por congestión y la distancia de trayecto")+
-  geom_smooth(method="gam",color="lightpink")
+  geom_smooth(method="lm",color="lightpink")
+
+lims <- as.POSIXct(strptime(c("2019-07-17 00:00", "2019-07-18 00:00"), 
+                            format = "%Y-%m-%d %H:%M"))
+df_taxis %>% 
+  ggplot(aes(x=start_job, y=congestion_surcharge)) + 
+  geom_point()+ 
+  scale_y_log10()+
+  scale_x_datetime(limits=lims, breaks = date_breaks("hour"),
+                   labels=date_format("%d %h:%m"))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  xlab('Time y-m-d ')+
+  ylab('Congestion surcharge')+
+  labs(title="CONGESTION SURCHARGE")
+
 
 str(df_taxis)
 # MODELO: PREDECIR PRECIO DEL VIAJE
