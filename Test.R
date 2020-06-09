@@ -49,6 +49,15 @@ if(!require("GGally")) {
 df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=200000)
 str(df_taxis)
 
+#Importem només els que tenen propina i congestió
+df_taxis_paid=df_taxis
+df_taxis_paid = filter(df_taxis_paid, tip_amount > 0)
+
+df_taxis_congestion=df_taxis
+df_taxis_congestion = filter(df_taxis_paid, congestion_surcharge > 0)
+str(df_taxis_congestion)
+
+
 #Important varaibles:
 #tpep_pickup_datetime
 #tpep_dropoff_datetime
@@ -66,12 +75,12 @@ str(df_taxis)
 #total_amount
 #df_taxis$VendorID = NULL
 
-str(df_taxis)
 
 # Are there NA values?
 sum(is.na(df_taxis))
 # No
 
+#Guardem les variables hora, dia... i les adjuntem a la taula
 start_job = mdy_hms(df_taxis$tpep_pickup_datetime)
 start_hour = hour(start_job)
 start_day = wday(start_job)
@@ -104,10 +113,11 @@ df_taxis %>%
   ylab('Number of trips')+
   labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
 
+
+
 #Outliers analysis
 
 #PLOT PRECIO_DISTANCIA
-
 #Hacer analisis para estudiar valores atípicos
 #Viajes con distancia 0
 #Viajes con valor 0
@@ -118,6 +128,9 @@ sum(is.null(df_taxis$total_amount))
 
 df_taxis = filter(df_taxis, total_amount > 0)
 
+
+
+#Relación entre la distancia y el precio a pagar
 ggplot(data=df_taxis,aes(x=trip_distance,y=total_amount))+
   geom_point()+
   labs(title="PRECIO - DISTANCIA",subtitle="Relación entre la distancia y el precio")+
@@ -127,6 +140,7 @@ ggplot(data=df_taxis,aes(x=trip_distance,y=total_amount))+
   #ylim(0,500)
 
 str(df_taxis$PULocationID)
+
 
 #PLOT TRAYECTOS FREQUENTES
 taxi_zones_PU=sort(unique(df_taxis$PULocationID))
@@ -145,22 +159,28 @@ ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
        subtitle="Número de viajes terminados en cada zona")
 
 ## INFO ##
-#En comptes de carregarnos propina i surcharge per embussos
 
-#PROPOSTA PROPINES I ZONES I SOBRECÀRREGUES
 
+#REVISAR! PROPOSTA PROPINES I ZONES I SOBRECÀRREGUES
 ggplot(data=df_taxis,aes(x=PULocationID,y=tip_amount))+
   geom_point(color="Purple")+
   labs(title="PRECIO - PICK UP POINT",subtitle="Relación entre el punto de PICK UP y la propina")+
   geom_smooth(method="lm",color="lightpink")
 
-ggplot(data=df_taxis,aes(x=trip_distance,y=congestion_surcharge))+
-  geom_point(color="Purple")+
-  labs(title="SOBRECARGA POR CONGESTIÓN",subtitle="Relación entre la sobrecarga por congestión y la distancia de trayecto")+
-  geom_smooth(method="lm",color="lightpink")
+#SOBRECARGA POR CONGESTIÓN CON HORA
+start_hour=as.numeric(df_taxis_congestion$start_hour)
+ggplot(df_taxis_congestion, aes(start_hour,fill=factor(start_day))) +
+  geom_bar()+
+  scale_fill_manual(values=c("#003f5c","#374c80","#7a5195","#bc5090","#ef5675","#ff764a","#ffa600"),
+                    breaks =c("1","2","3","4","5","6","7"),
+                    labels=c("Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"),
+                    name="Días de la semana")+
+  labs(title="SOBRECARGA POR CONGESTIÓN",subtitle="Relación entre la sobrecarga por congestión y la hora",
+     x="Hora de pick up",
+     y="Frecuencia de sobrecarga")
 
-lims <- as.POSIXct(strptime(c("2019-07-17 00:00", "2019-07-18 00:00"), 
-                            format = "%Y-%m-%d %H:%M"))
+
+
 
 df_taxis %>% 
   ggplot(aes(x=start_job, y=congestion_surcharge)) + 
@@ -173,9 +193,67 @@ df_taxis %>%
   ylab('Congestion surcharge')+
   labs(title="CONGESTION SURCHARGE")
 
-str(df_taxis)
-# MODELO: PREDECIR PRECIO DEL VIAJE
+#Numero de pasajeros por viaje
+ggplot(df_taxis, aes(fct_infreq(factor(passenger_count))))+
+  geom_bar(fill="Pink") + 
+  theme(axis.text.x = element_text(angle = 0))+
+  labs(title="NUMERO DE PASAJEROS",
+       subtitle="Numero de pasajeros por viaje",
+       x="Numero de Pasajeros",
+       y="Frecuencia")
 
+
+#ESTÁ MAL! NO DA INFORMACIÓN! Numero de pasajeros en función de la estación
+ggplot(data=df_taxis,aes(x=PULocationID,y=passenger_count))+
+  geom_count(color="Pink", alpha=0.5)+
+  labs(title="NÚMERO PASAJEROS",
+       subtitle = "Numero de pasajeros en función de la PICK UP location",
+       x="Pick up location",
+       y="Numero de pasajeros")
+
+#Tipos de pago
+ggplot(df_taxis, aes(fct_infreq(factor(payment_type))))+
+  geom_bar(fill="Pink") + 
+  scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
+  theme(axis.text.x = element_text(angle = 0),)+
+  labs(title="TIPO DE PAGO",
+       subtitle="Distintos tipos de pago",
+       x="Tipo de pago",
+       y="Frecuencia")
+
+
+#Numero de personas y tipo de pago
+ggplot(data=df_taxis,mapping=aes(y=passenger_count,x=factor(payment_type)))+
+  geom_count(color=rainbow(23))+
+  scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
+  labs(title="TIPO DE PAGO",
+       subtitle = "Método de pago en función de los ocupantes del coche",
+       y="Cantidad de ocupantes",
+       x="Tipo de pago")
+
+
+
+#Cantidad pagada y tipo de pago 
+ggplot(data=df_taxis,mapping=aes(y=total_amount,x=factor(payment_type)))+
+  geom_violin(scale="area",fill="aquamarine")+
+  scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
+  labs(title="TIPO DE PAGO",
+       subtitle = "Método de pago en función de la cantidad a pagar",
+       y="Cantidad a pagar",
+       x="Tipo de pago")
+
+
+#Cantidad pagada y propina 
+ggplot(data=df_taxis_paid,aes(x=total_amount,y=tip_amount))+
+  geom_jitter(color="lightpink", alpha=0.8)+
+  geom_smooth(color="lightblue1")+
+  labs(title="PROPINAS",
+       subtitle = "Propina en función de la cantidad pagada",
+       x="Cantidad a pagar",
+       y="Propina")
+
+
+# MODELO: PREDECIR PRECIO DEL VIAJE
 sum(is.na(df_taxis$total_amount))
 sum(is.na(df_taxis$passenger_count))
 sum(is.na(df_taxis$trip_distance))
@@ -192,9 +270,11 @@ modelo <- (lm(formula = total_amount ~ passenger_count + trip_distance +
                 start_hour + start_day , data = df_taxis))
 summary(modelo)
 
-ggplot(df_taxis, aes(x=start_hour,y=congestion_surcharge,
-                     color=factor(start_day))) +
-  geom_point()+
-  geom_jitter()+
-  scale_fill_brewer(palette="Set3")
 
+##JA HO HE PUJAT A DALT!!
+ggplot(df_taxis_paid, aes(x=start_hour,y=congestion_surcharge,
+                     color=factor(start_day))) +
+  #geom_point()+
+  #geom_jitter()+
+  #geom_count(alpha=0.5)+
+  scale_fill_brewer(palette="Set3")
