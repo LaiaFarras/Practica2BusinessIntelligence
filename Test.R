@@ -3,6 +3,7 @@
 ##  PRACTICA 2 BUSINESS INTELLIGENCE                                       ##
 ##                                                                         ##
 ##  @autores: Laia Farràs and Josep Font                                   ##
+##  IQS Barcelona School of Engineering                                    ##
 ##                                                                         ##
 ##=========================================================================##
 
@@ -63,7 +64,6 @@ str(df_taxis)
 #tip_amount
 #tolls_amount
 #total_amount
-
 #df_taxis$VendorID = NULL
 
 str(df_taxis)
@@ -79,18 +79,6 @@ finish_job = mdy_hms(df_taxis$tpep_dropoff_datetime)
   
 df_taxis=cbind(df_taxis,start_job,start_day,start_hour,finish_job)
 str(df_taxis)
-
-#ggplot(df_taxis, aes(start_job)) + 
-  #geom_histogram(binwidth=604800) +
-  #theme_bw() + xlab(NULL) +
-  #scale_x_datetime(labels = date_format("%M/%Y"),
-    #               limits = NULL,
-    ~#               breaks=date_breaks(width="1 week"))+
-  #scale_y_log10() +
-  #theme(axis.text.x = element_text(angle = 90))
-
-#lims = as.POSIXct(strptime(c("2019-01-01 00:00:00","2019-02-01 00:00:00"),
-                #format = "%Y-%M-%d %h:%m:%s"))
   
 df_taxis$start_job = as.Date(df_taxis$start_job)
 
@@ -109,7 +97,7 @@ df_taxis %>%
   ggplot(aes(start_job)) + 
   geom_freqpoly(binwidth = 3600)+ # 86400 seconds = 1 day
   scale_y_log10()+
-  scale_x_datetime(limits=lims, breaks = date_breaks("day"),
+  scale_x_date(limits=lims, breaks = date_breaks("day"),
                    labels=date_format("%y-%m-%d"))+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   xlab('Time y-m-d ')+
@@ -173,6 +161,7 @@ ggplot(data=df_taxis,aes(x=trip_distance,y=congestion_surcharge))+
 
 lims <- as.POSIXct(strptime(c("2019-07-17 00:00", "2019-07-18 00:00"), 
                             format = "%Y-%m-%d %H:%M"))
+
 df_taxis %>% 
   ggplot(aes(x=start_job, y=congestion_surcharge)) + 
   geom_point()+ 
@@ -183,7 +172,6 @@ df_taxis %>%
   xlab('Time y-m-d ')+
   ylab('Congestion surcharge')+
   labs(title="CONGESTION SURCHARGE")
-
 
 str(df_taxis)
 # MODELO: PREDECIR PRECIO DEL VIAJE
@@ -196,6 +184,7 @@ sum(is.na(df_taxis$start_day))
 
 df_taxis$passenger_count %>% drop_na(df_taxis$passenger_count)
 str(df_taxis$passenger_count)
+
 df %>% filter(!is.na(df_taxis$passenger_count))
 sum(is.na(df_taxis$passenger_count))
 
