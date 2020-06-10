@@ -59,7 +59,7 @@ if(!require("ggalluvial")) {
 df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=100000)
 #Eliminate trips without distance
 df_taxis= filter(df_taxis, trip_distance > 0)
-#Total amount must be psoitive
+#Total amount must be positive
 
 #Total amount can't be zero
 df_taxis= filter(df_taxis, total_amount > 0)
@@ -101,8 +101,14 @@ start_job = mdy_hms(df_taxis$tpep_pickup_datetime)
 start_hour = hour(start_job)
 start_day = wday(start_job)
 finish_job = mdy_hms(df_taxis$tpep_dropoff_datetime)
-  
-df_taxis=cbind(df_taxis,start_job,start_day,start_hour,finish_job)
+minutes = as.numeric(difftime(finish_job,start_job,units='min'))
+
+df_taxis=cbind(df_taxis,start_job,start_day,start_hour,finish_job,minutes)
+
+#Trips must have a time of at least 1 minute
+df_taxis= filter(df_taxis, minutes > 1)
+
+
 str(df_taxis)
   
 #df_taxis$start_job = as.Date(df_taxis$start_job)
@@ -117,18 +123,18 @@ df_taxis %>%
   labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
 
 #Adjust limits for the following graph
-lims <- as.POSIXct(strptime(c("2019-03-01 00:00", "2019-03-03 00:00"), 
-                            format = "%Y-%m-%d %H:%M"))
-
-df_taxis %>% 
-  ggplot(aes(as.Date(start_job))) + 
-  geom_freqpoly(binwidth = 3600)+ # 86400 seconds = 1 day
-  theme_bw()+
-  scale_x_date(limits=as.Date(lims), breaks = date_breaks("day"),
-                   labels=date_format("%y-%m-%d"))+
-  xlab('Time y-m-d ')+
-  ylab('Number of trips')+
-  labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
+# lims <- as.POSIXct(strptime(c("2019-03-01 00:00", "2019-03-03 00:00"), 
+#                             format = "%Y-%m-%d %H:%M"))
+# 
+# df_taxis %>% 
+#   ggplot(aes(as.Date(start_job))) + 
+#   geom_freqpoly(binwidth = 3600)+ # 86400 seconds = 1 day
+#   theme_bw()+
+#   scale_x_date(limits=as.Date(lims), breaks = date_breaks("day"),
+#                    labels=date_format("%y-%m-%d"))+
+#   xlab('Time y-m-d ')+
+#   ylab('Number of trips')+
+#   labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
 
 #Outliers analysis
 
@@ -198,51 +204,51 @@ ggplot(data=high_tip,aes(x=reorder(factor(PULocationID),-mean_tip),y=mean_tip))+
 
 #Scatter plot number of trips and mean tips
 PUStationID = count(df_taxis,'PULocationID') #Count number of trips for each zone
-nTrips_meanTips=cbind(PUStationID, tip_location[,2])
+df_mean_tip=cbind(PUStationID, tip_location[,2])
 
-ggplot(data=nTrips_meanTips, aes(x=freq,y=mean_tip, label=PULocationID))+
+ggplot(data=df_mean_tip, aes(x=freq,y=mean_tip, label=PULocationID))+
   geom_point()+
-  geom_text(aes(label=ifelse(mean_tip>5 & freq > 100,
+  geom_text(aes(label=ifelse(mean_tip>mean(mean_tip)*2 & freq > mean(freq),
                              as.character(PULocationID),'')),hjust=-0.3, vjust=-0.3)+
   labs(title="BEST ZONES TO WORK FOR TIPS",
        subtitle="Comparing the demand for trips and the average tips")+
   xlab('Number of trips')+
   ylab('Mean tip ($)')
 
-
-#Study most profitable zones
-PUStationID = count(df_taxis,'PULocationID') #Count number of trips for each zone
-mean_amount_paid = df_taxis %>%
+#Scatter plot number of trips and mean amount paid
+mean_amount = df_taxis %>%
   group_by(PULocationID) %>%
   dplyr::summarize(mean_amount = mean(total_amount, na.rm=TRUE))
 
-nTrips_meanAmount=cbind(PUStationID, mean_amount_paid[,2])
+df_mean_amount=cbind(PUStationID, mean_amount[,2])
 
-ggplot(data=nTrips_meanAmount, aes(x=freq,y=mean_amount, label=PULocationID))+
+ggplot(data=df_mean_amount, aes(x=freq,y=mean_amount, label=PULocationID))+
   geom_point()+
-  geom_text(aes(label=ifelse(mean_amount>40 & freq>100,
+  geom_text(aes(label=ifelse(mean_amount>mean(mean_amount)*2 & freq > mean(freq),
                              as.character(PULocationID),'')),hjust=-0.3, vjust=-0.3)+
-  labs(title="BEST ZONES TO WORK FOR TOTAL AMOUNT",
+  labs(title="BEST ZONES TO WORK FOR TIPS",
        subtitle="Comparing the demand for trips and the average amount paid")+
   xlab('Number of trips')+
   ylab('Mean amount paid ($)')
 
-#Study most profitable zones divided by distance
+#Study most profitable zones per minute
 PUStationID = count(df_taxis,'PULocationID') #Count number of trips for each zone
-mean_amount_paid = df_taxis %>%
+price_mile = df_taxis %>%
   group_by(PULocationID) %>%
-  dplyr::summarize(mean_amount = mean(total_amount/trip_distance, na.rm=TRUE))
+  dplyr::summarize(price_mile = mean(total_amount/as.numeric(difftime(finish_job,start_job,units='min'))
+                                     , na.rm=TRUE))
 
-nTrips_meanAmount=cbind(PUStationID, mean_amount_paid[,2])
+df_price_mile=cbind(PUStationID, price_mile[,2])
 
-ggplot(data=nTrips_meanAmount, aes(x=freq,y=mean_amount, label=PULocationID))+
+ggplot(data=df_price_mile, aes(x=freq,y=price_mile, label=PULocationID))+
   geom_point()+
-  geom_text(aes(label=ifelse(mean_amount>60,
+  geom_text(aes(label=ifelse(price_mile>mean(price_mile) & freq>mean(freq),
                              as.character(PULocationID),'')),hjust=-0.3, vjust=-0.3)+
   labs(title="BEST ZONES TO WORK FOR TOTAL AMOUNT",
        subtitle="Comparing the demand for trips and the average amount paid")+
+  coord_cartesian(ylim=c(0.75,2.5))+
   xlab('Number of trips')+
-  ylab('Mean amount paid ($)')
+  ylab('Mean amount paid ($)/minute')
 
 #SOBRECARGA POR CONGESTIÓN CON HORA
 #start_hour=as.numeric(df_taxis_congestion$start_hour)
