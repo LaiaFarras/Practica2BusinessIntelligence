@@ -26,14 +26,19 @@ if(!require("lubridate")) {
     install.packages("lubridate")
     library("lubridate")
 }
+
+#Importamos la base de datos
 df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000000)
 df_taxis=sample_n(df_taxis,size=20000)
+
+#Creamos las variables nuevas
 start_job = mdy_hms(df_taxis$tpep_pickup_datetime)
 start_hour = hour(start_job)
 start_day = wday(start_job)
 finish_job = mdy_hms(df_taxis$tpep_dropoff_datetime)
 df_taxis=cbind(df_taxis,start_job,start_day,start_hour,finish_job)
 
+#Eliminamos las columnas que no nos interesan
 df_taxis$tpep_pickup_datetime = NULL
 df_taxis$tpep_dropoff_datetime = NULL
 df_taxis$store_and_fwd_flag = NULL
@@ -46,19 +51,6 @@ shinyServer(function(input, output) {
         df_taxis[sample(nrow(df_taxis), input$sampleSize),]
     })
     
-    #lims <- as.POSIXct(strptime(c("2019-07-01 00:00", "2019-08-04 00:00"), 
-     #                           format = "%Y-%m-%d %H:%M"))
-    
-    #output$graph <- renderPlot({
-     #   ggplot(df_taxis) + 
-      #      geom_point(aes(x=start_job, y=input$category)) + 
-       #     scale_x_datetime() +
-        #    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-         #   xlab('Time y-m-d ') +
-           # ylab(input$category) +
-            #labs(title="")
-    #})
-
     DrawChart <- eventReactive(input$start, {
         chart <- ggplot(dataset()) 
         
@@ -66,6 +58,12 @@ shinyServer(function(input, output) {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_point(alpha = input$alpha)
         } else if(input$geom == "boxplot") {
             chart <- chart + aes_string(x = input$color, y = input$y) + geom_boxplot()
+        } else if(input$geom == "histogram") {
+            chart <- chart+ aes_string(x=input$color) + geom_bar()
+        } else if(input$geom == "jitter") {
+            chart <- chart + aes_string(x = input$x, y = input$y) + geom_jitter(alpha = input$alpha)
+        } else if(input$geom == "count") {
+            chart <- chart + aes_string(x = input$x, y = input$y) + geom_count(alpha = input$alpha)
         } 
          
          if(input$color != "None")
@@ -77,6 +75,20 @@ shinyServer(function(input, output) {
         if(input$method != "None") 
             chart <- chart + geom_smooth(method=input$method)
         
+        chart <- chart +theme_bw()
+        
+        
+        #Editem l'eix X per mostrar la informació discreta
+        #NO EM FUNCIONA!!
+        if(input$geom=="histogram" & input$color=="payment_type")
+            chart<-chart+scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
+            xlab("Tipos de pago")
+        
+        if(input$geom=="histogram" & input$color=="start_day")
+            chart<-chart+scale_x_discrete(labels=c("1"="Domingo","2"="Lunes","3"="Martes","4"="Miércoles","5"="Jueves","6"="Viernes","7"="Sábado"))+
+            xlab("Días de la semana")
+
+
         print(chart)
         
     })
