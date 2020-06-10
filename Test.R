@@ -100,6 +100,7 @@ str(df_taxis$start_job)
 df_taxis %>% 
   ggplot(aes(as.Date(start_job))) + 
   geom_freqpoly(binwidth = 1)+ # 86400 seconds = 1 day
+  theme_bw()+
   xlab('Time y-m')+
   ylab('Number of trips')+
   labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
@@ -111,11 +112,14 @@ lims <- as.POSIXct(strptime(c("2019-03-01 00:00", "2019-03-03 00:00"),
 df_taxis %>% 
   ggplot(aes(as.Date(start_job))) + 
   geom_freqpoly(binwidth = 3600)+ # 86400 seconds = 1 day
+  theme_bw()+
   scale_x_date(limits=as.Date(lims), breaks = date_breaks("day"),
                    labels=date_format("%y-%m-%d"))+
   xlab('Time y-m-d ')+
   ylab('Number of trips')+
   labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
+
+
 
 #Outliers analysis
 
@@ -135,6 +139,7 @@ df_taxis = filter(df_taxis, total_amount > 0)
 #Relación entre la distancia y el precio a pagar
 ggplot(data=df_taxis,aes(x=trip_distance,y=total_amount))+
   geom_point()+
+  theme_bw()+
   labs(title="PRECIO - DISTANCIA",subtitle="Relación entre la distancia y el precio")+
   geom_smooth(method='lm') +
   xlim(0,50)
@@ -156,11 +161,10 @@ ggplot(df_taxis, aes(fct_infreq(factor(PULocationID)))) +
 
 ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
   geom_bar() + 
+  theme_bw()+
   theme(axis.text.x = element_text(angle = 90))+
   labs(title="ZONAS TLC MÁS FRECUENTES PARA FINALIZACIÓN",
        subtitle="Número de viajes terminados en cada zona")
-
-## INFO ##
 
 
 #REVISAR! PROPOSTA PROPINES I ZONES I SOBRECÀRREGUES
@@ -175,13 +179,28 @@ df_taxis %>%
   ggplot(df_taxis, mapping=aes(start_hour,fill=factor(start_day))) +
     geom_bar()+
     theme_bw()+
-    scale_fill_manual(values=c("#003f5c","#374c80","#7a5195","#bc5090","#ef5675","#ff764a","#ffa600"),
+    scale_fill_manual(values=c("#003f5c","#374c80","#7a5195","#bc5090","#ef5675","#ff764a","#ffa600"))
+
+#REVISAR! PROPOSTA PROPINES I ZONES I SOBRECÀRREGUES
+ggplot(data=df_taxis,aes(x=PULocationID,y=tip_amount))+
+  geom_point(color="Purple")+
+  theme_bw()+
+  labs(title="PRECIO - PICK UP POINT",subtitle="Relación entre el punto de PICK UP y la propina")+
+  geom_smooth(method="lm",color="lightpink")
+
+#SOBRECARGA POR CONGESTIÓN CON HORA
+start_hour=as.numeric(df_taxis_congestion$start_hour)
+
+ggplot(df_taxis_congestion, aes(start_hour,fill=factor(start_day))) +
+  geom_bar()+
+  scale_fill_manual(values=c("#003f5c","#374c80","#7a5195","#bc5090","#ef5675","#ff764a","#ffa600"),
                     breaks =c("1","2","3","4","5","6","7"),
                     labels=c("Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"),
                     name="Días de la semana")+
   labs(title="SOBRECARGA POR CONGESTIÓN",subtitle="Relación entre la sobrecarga por congestión y la hora",
      x="Hora de pick up",
      y="Frecuencia de sobrecarga")
+
 
 df_taxis %>% 
   ggplot(aes(x=start_job, y=congestion_surcharge)) + 
@@ -196,8 +215,12 @@ df_taxis %>%
 
 #Numero de pasajeros por viaje
 ggplot(df_taxis, aes(fct_infreq(factor(passenger_count))))+
+<<<<<<< HEAD
   geom_bar(fill="Brown") + 
   theme_bw()+
+=======
+  geom_bar(fill="Pink") + 
+>>>>>>> 77e79bba0aeb34bf7e93a2f9b36cf4f8d340ff51
   theme(axis.text.x = element_text(angle = 0))+
   labs(title="NUMERO DE PASAJEROS",
        subtitle="Numero de pasajeros por viaje",
@@ -280,6 +303,7 @@ ggplot(df_taxis_paid, aes(x=start_hour,y=congestion_surcharge,
   #geom_jitter()+
   #geom_count(alpha=0.5)+
   scale_fill_brewer(palette="Set3")
+
 
 #FALTA ACABAR
 ggplot(data = df_taxis,
