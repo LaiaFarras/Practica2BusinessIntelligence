@@ -23,6 +23,11 @@ if(!require("dplyr")) {
   library("dplyr")
 }
 
+if(!require("plyr")) {
+  install.packages("plyr")
+  library("plyr")
+}
+
 if(!require("lubridate")) {
   install.packages("lubridate")
   library("lubridate")
@@ -119,8 +124,6 @@ df_taxis %>%
   ylab('Number of trips')+
   labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
 
-
-
 #Outliers analysis
 
 #PLOT PRECIO_DISTANCIA
@@ -143,34 +146,47 @@ ggplot(data=df_taxis,aes(x=trip_distance,y=total_amount))+
   labs(title="PRECIO - DISTANCIA",subtitle="Relación entre la distancia y el precio")+
   geom_smooth(method='lm') +
   xlim(0,50)
-  #scale_x_log10()
-  #ylim(0,500)
 
 str(df_taxis$PULocationID)
 
-
 #PLOT TRAYECTOS FREQUENTES
-taxi_zones_PU=sort(unique(df_taxis$PULocationID))
-taxi_zones_DO=sort(unique(df_taxis$DOLocationID))
+PUStationID = count(df_taxis,'PULocationID')
+PUStationID = PUStationID[PUStationID$freq > nrow(df_taxis)*0.01,]
+#PUStationID$PULocationID = as.factor(PUStationID$PULocationID)
+#PUStationID = PUStationID %>% arrange(freq)
 
-ggplot(df_taxis, aes(fct_infreq(factor(PULocationID)))) +
-  geom_bar(aes(y = ifelse(..count.. > nrow(df_taxis)*0.05, ..count.., NA))) + 
+
+ggplot(PUStationID, aes(reorder(PULocationID,-freq),freq)) +
+  geom_bar(stat='identity') + 
   theme_bw()+
-  labs(title="ZONAS TLC MÁS FRECUENTES PARA INICIO",
-       subtitle="Número de viajes pedidos en cada zona")
+  labs(title="MOST POPULAR ZONES FOR PICK UP",
+       subtitle="Zones that concentrate more than 1% of all rides")+
+  xlab('Taxi Zones')+
+  ylab('Number of trips started')
 
-ggplot(df_taxis, aes(fct_infreq(factor(DOLocationID)))) +
-  geom_bar() + 
+DOStationID = count(df_taxis,'DOLocationID')
+DOStationID = DOStationID[DOStationID$freq > nrow(df_taxis)*0.01,]
+
+ggplot(DOStationID, aes(reorder(DOLocationID,-freq),freq)) +
+  geom_bar(stat='identity') + 
   theme_bw()+
-  theme(axis.text.x = element_text(angle = 90))+
-  labs(title="ZONAS TLC MÁS FRECUENTES PARA FINALIZACIÓN",
-       subtitle="Número de viajes terminados en cada zona")
-
+  labs(title="MOST POPULAR ZONES FOR DROP OFF",
+       subtitle="Zones that concentrate more than 1% of all rides")+
+  xlab('Taxi Zones')+
+  ylab('Number of trips ended')
 
 #REVISAR! PROPOSTA PROPINES I ZONES I SOBRECÀRREGUES
-ggplot(data=df_taxis,aes(x=PULocationID,y=mean(tip_amount)))+
-  geom_bar(color="Purple")+
-  labs(title="PRECIO - PICK UP POINT",subtitle="Relación entre el punto de PICK UP y la propina")
+tip_location = df_taxis %>%
+  group_by(PULocationID) %>%
+  dplyr::summarize(mean_tip = mean(tip_amount, na.rm=TRUE))
+
+high_tip = tip_location[tip_location$mean_tip > mean(tip_location$mean_tip)+sd(tip_location$mean_tip),]
+
+ggplot(data=high_tip,aes(x=reorder(factor(PULocationID),-mean_tip),y=mean_tip))+
+  geom_bar(stat='identity')+
+  labs(title="BEST ZONES FOR TIPS",subtitle="Showing zones that are above mean + sigma")+
+  xlab('Taxi Zones')+
+  ylab('Mean tip ($)')
 
 #SOBRECARGA POR CONGESTIÓN CON HORA
 #start_hour=as.numeric(df_taxis_congestion$start_hour)
@@ -208,6 +224,7 @@ df_taxis %>%
   scale_y_log10()+
   scale_x_datetime(limits=lims, breaks = date_breaks("hour"),
                    labels=date_format("%d %h:%m"))+
+  theme_bw()+
   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
   xlab('Time y-m-d ')+
   ylab('Congestion surcharge')+
@@ -215,12 +232,8 @@ df_taxis %>%
 
 #Numero de pasajeros por viaje
 ggplot(df_taxis, aes(fct_infreq(factor(passenger_count))))+
-<<<<<<< HEAD
   geom_bar(fill="Brown") + 
   theme_bw()+
-=======
-  geom_bar(fill="Pink") + 
->>>>>>> 77e79bba0aeb34bf7e93a2f9b36cf4f8d340ff51
   theme(axis.text.x = element_text(angle = 0))+
   labs(title="NUMERO DE PASAJEROS",
        subtitle="Numero de pasajeros por viaje",
@@ -231,6 +244,7 @@ ggplot(df_taxis, aes(fct_infreq(factor(passenger_count))))+
 #ESTÁ MAL! NO DA INFORMACIÓN! Numero de pasajeros en función de la estación
 ggplot(data=df_taxis,aes(x=PULocationID,y=passenger_count))+
   geom_count(color="Pink", alpha=0.5)+
+  theme_bw()+
   labs(title="NÚMERO PASAJEROS",
        subtitle = "Numero de pasajeros en función de la PICK UP location",
        x="Pick up location",
@@ -239,6 +253,7 @@ ggplot(data=df_taxis,aes(x=PULocationID,y=passenger_count))+
 #Tipos de pago
 ggplot(df_taxis, aes(fct_infreq(factor(payment_type))))+
   geom_bar(fill="Pink") + 
+  theme_bw()+
   scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
   theme(axis.text.x = element_text(angle = 0),)+
   labs(title="TIPO DE PAGO",
@@ -250,6 +265,7 @@ ggplot(df_taxis, aes(fct_infreq(factor(payment_type))))+
 #Numero de personas y tipo de pago
 ggplot(data=df_taxis,mapping=aes(y=passenger_count,x=factor(payment_type)))+
   geom_count(color=rainbow(23))+
+  theme_bw()+
   scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
   labs(title="TIPO DE PAGO",
        subtitle = "Método de pago en función de los ocupantes del coche",
@@ -261,6 +277,7 @@ ggplot(data=df_taxis,mapping=aes(y=passenger_count,x=factor(payment_type)))+
 #Cantidad pagada y tipo de pago 
 ggplot(data=df_taxis,mapping=aes(y=total_amount,x=factor(payment_type)))+
   geom_violin(scale="area",fill="aquamarine")+
+  theme_bw()+
   scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
   labs(title="TIPO DE PAGO",
        subtitle = "Método de pago en función de la cantidad a pagar",
@@ -271,11 +288,21 @@ ggplot(data=df_taxis,mapping=aes(y=total_amount,x=factor(payment_type)))+
 #Cantidad pagada y propina 
 ggplot(data=df_taxis_paid,aes(x=total_amount,y=tip_amount))+
   geom_jitter(color="lightpink", alpha=0.8)+
-  geom_smooth(color="lightblue1")+
-  labs(title="PROPINAS",
-       subtitle = "Propina en función de la cantidad pagada",
-       x="Cantidad a pagar",
-       y="Propina")
+  theme_bw()+
+  geom_smooth(method='lm')+
+  labs(title="CORRELATION",
+       subtitle = "Tips against the total amount to pay",
+       x="Total amount to pay ($)",
+       y="Tip")
+
+ggplot(data=df_taxis_paid,aes(x=trip_distance,y=tip_amount))+
+  geom_jitter(color="lightpink", alpha=0.8)+
+  theme_bw()+
+  geom_smooth(method='lm')+
+  labs(title="CORRELATION",
+       subtitle = "Tips against the trip distance",
+       x="Trip distance",
+       y="Tip")
 
 
 # MODELO: PREDECIR PRECIO DEL VIAJE
@@ -306,12 +333,20 @@ ggplot(df_taxis_paid, aes(x=start_hour,y=congestion_surcharge,
 
 
 #FALTA ACABAR
+#y = ifelse(..count.. > nrow(df_taxis)*0.05, ..count.., NA)
+df_taxis %>% 
+  group_by(PULocationID) %>% 
+  mutate(freq = n()) %>% 
+  ungroup() %>% 
+  filter(freq > nrow(df_taxis)*0.01) %>%
+  select(-freq)
+
 ggplot(data = df_taxis,
        aes(axis1 = PULocationID, axis2 = DOLocationID)) +
   scale_x_discrete(limits = c("Pick-up", "Drop off")) +
-  xlab("Demographic") +
-  geom_alluvium(aes(fill = VendorID)) +
+  xlab("Taxi Zones") +
+  geom_alluvium() +
   geom_stratum()  +
-  ggtitle("passengers on the maiden voyage of the Titanic",
-          "stratified by demographics and survival")
+  ggtitle("Sankey diagram",
+          "Most frequency stations")
 
