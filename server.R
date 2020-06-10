@@ -26,18 +26,19 @@ if(!require("lubridate")) {
     install.packages("lubridate")
     library("lubridate")
 }
+df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000000)
+df_taxis=sample_n(df_taxis,size=20000)
+start_job = mdy_hms(df_taxis$tpep_pickup_datetime)
+start_hour = hour(start_job)
+start_day = wday(start_job)
+finish_job = mdy_hms(df_taxis$tpep_dropoff_datetime)
+df_taxis=cbind(df_taxis,start_job,start_day,start_hour,finish_job)
 
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=20000)
-# start_job = mdy_hms(df_taxis$tpep_pickup_datetime)
-# start_hour = hour(start_job)
-# start_day = wday(start_job)
-# finish_job = mdy_hms(df_taxis$tpep_dropoff_datetime)
 df_taxis$tpep_pickup_datetime = NULL
 df_taxis$tpep_dropoff_datetime = NULL
-
-
-#df_taxis=cbind(df_taxis,start_job,start_day,start_hour,finish_job)
-
+df_taxis$store_and_fwd_flag = NULL
+df_taxis$start_job = NULL
+df_taxis$finish_job = NULL
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -67,11 +68,11 @@ shinyServer(function(input, output) {
             chart <- chart + aes_string(x = input$color, y = input$y) + geom_boxplot()
         } 
          
-        # if(input$color != "None")
-        #     chart <- chart + aes_string(color=input$color)
-        
-        # if(input$facet != "None")
-        #     chart <- chart + facet_wrap(c(input$facet))
+         if(input$color != "None")
+             chart <- chart + aes_string(color=input$color)
+
+         if(input$facet != "None")
+             chart <- chart + facet_wrap(c(input$facet))
         
         if(input$method != "None") 
             chart <- chart + geom_smooth(method=input$method)
