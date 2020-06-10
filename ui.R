@@ -42,8 +42,12 @@ library(shiny); library(ggplot2)
 # ))
 
 
-numvars <- names(df_taxis[, sapply(df_taxis, is.numeric)])
-factvars <- c("None", names(df_taxis[, sapply(df_taxis, is.factor)]))
+# numvars <- names(df_taxis[, sapply(df_taxis, is.numeric)])
+numvars <- c("passenger_count","trip_distance","PULocationID","DOLocationID","fare_amount","extra","mta_tax","tip_amount","tolls_amount","improvement_surcharge","total_amount","congestion_surcharge","start_hour")
+
+factvars <- c("None","VendorID","RatecodeID","payment_type","passenger_count","start_day")
+
+
 
 shinyUI(fluidPage(
     titlePanel("Taxis de NYC"),
@@ -58,14 +62,14 @@ shinyUI(fluidPage(
                         value = 5000, min = 1000, max = nrow(df_taxis), step = 500, round = 0),
             selectInput('x', 'X', numvars),
             selectInput('y', 'Y', numvars, numvars[2]),
-            # selectInput("color", "Elige color y variable para boxplot", factvars, "None"),
-            # selectInput('facet', 'Facets', factvars),
+            selectInput("color", "Elige color y variable para boxplot", factvars, "None"),
+            selectInput('facet', 'Clasificar en función de variable:', factvars),
             sliderInput("alpha", "Transparency", min = 0, max = 1, value = 0.8),
             radioButtons(inputId = "geom", label = "Tipo de grafico:",
                          choices = c("X Y" = "points",
                                      "Boxplot" = "boxplot",
-                                     # "Jitter" = "jitter",
-                                      "Count"="count"), 
+                                     "Jitter" = "jitter",
+                                     "Count"="count"), 
                          selected = "X Y"),
             radioButtons(inputId = "method", label = "Método de regresión:",
                          choices = c("None" = "None",
