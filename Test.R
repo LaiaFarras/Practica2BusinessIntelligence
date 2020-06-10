@@ -56,7 +56,13 @@ if(!require("ggalluvial")) {
 
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=20000)
+df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=100000)
+#Eliminate trips without distance
+df_taxis= filter(df_taxis, trip_distance > 0)
+#Total amount must be psoitive
+
+#Total amount can't be zero
+df_taxis= filter(df_taxis, total_amount > 0)
 str(df_taxis)
 
 #Importem només els que tenen propina i congestió
@@ -190,6 +196,54 @@ ggplot(data=high_tip,aes(x=reorder(factor(PULocationID),-mean_tip),y=mean_tip))+
   xlab('Taxi Zones')+
   ylab('Mean tip ($)')
 
+#Scatter plot number of trips and mean tips
+PUStationID = count(df_taxis,'PULocationID') #Count number of trips for each zone
+nTrips_meanTips=cbind(PUStationID, tip_location[,2])
+
+ggplot(data=nTrips_meanTips, aes(x=freq,y=mean_tip, label=PULocationID))+
+  geom_point()+
+  geom_text(aes(label=ifelse(mean_tip>5 & freq > 100,
+                             as.character(PULocationID),'')),hjust=-0.3, vjust=-0.3)+
+  labs(title="BEST ZONES TO WORK FOR TIPS",
+       subtitle="Comparing the demand for trips and the average tips")+
+  xlab('Number of trips')+
+  ylab('Mean tip ($)')
+
+
+#Study most profitable zones
+PUStationID = count(df_taxis,'PULocationID') #Count number of trips for each zone
+mean_amount_paid = df_taxis %>%
+  group_by(PULocationID) %>%
+  dplyr::summarize(mean_amount = mean(total_amount, na.rm=TRUE))
+
+nTrips_meanAmount=cbind(PUStationID, mean_amount_paid[,2])
+
+ggplot(data=nTrips_meanAmount, aes(x=freq,y=mean_amount, label=PULocationID))+
+  geom_point()+
+  geom_text(aes(label=ifelse(mean_amount>40 & freq>100,
+                             as.character(PULocationID),'')),hjust=-0.3, vjust=-0.3)+
+  labs(title="BEST ZONES TO WORK FOR TOTAL AMOUNT",
+       subtitle="Comparing the demand for trips and the average amount paid")+
+  xlab('Number of trips')+
+  ylab('Mean amount paid ($)')
+
+#Study most profitable zones divided by distance
+PUStationID = count(df_taxis,'PULocationID') #Count number of trips for each zone
+mean_amount_paid = df_taxis %>%
+  group_by(PULocationID) %>%
+  dplyr::summarize(mean_amount = mean(total_amount/trip_distance, na.rm=TRUE))
+
+nTrips_meanAmount=cbind(PUStationID, mean_amount_paid[,2])
+
+ggplot(data=nTrips_meanAmount, aes(x=freq,y=mean_amount, label=PULocationID))+
+  geom_point()+
+  geom_text(aes(label=ifelse(mean_amount>60,
+                             as.character(PULocationID),'')),hjust=-0.3, vjust=-0.3)+
+  labs(title="BEST ZONES TO WORK FOR TOTAL AMOUNT",
+       subtitle="Comparing the demand for trips and the average amount paid")+
+  xlab('Number of trips')+
+  ylab('Mean amount paid ($)')
+
 #SOBRECARGA POR CONGESTIÓN CON HORA
 #start_hour=as.numeric(df_taxis_congestion$start_hour)
 df_taxis %>%
@@ -242,7 +296,7 @@ df_taxis %>%
 
 #Numero de pasajeros por viaje
 ggplot(df_taxis, aes(fct_infreq(factor(passenger_count))))+
-  geom_bar(fill="Brown") + 
+  geom_bar() + 
   theme_bw()+
   theme(axis.text.x = element_text(angle = 0))+
   labs(x="Number of passengers",
@@ -251,7 +305,7 @@ ggplot(df_taxis, aes(fct_infreq(factor(passenger_count))))+
 
 #ESTÁ MAL! NO DA INFORMACIÓN! Numero de pasajeros en función de la estación
 ggplot(data=df_taxis,aes(x=PULocationID,y=passenger_count))+
-  geom_count(color="Pink", alpha=0.5)+
+  geom_count(alpha=0.5)+ #color='Pink'
   theme_bw()+
   labs(title="NÚMERO PASAJEROS",
        subtitle = "Numero de pasajeros en función de la PICK UP location",
@@ -260,7 +314,7 @@ ggplot(data=df_taxis,aes(x=PULocationID,y=passenger_count))+
 
 #Tipos de pago
 ggplot(df_taxis, aes(fct_infreq(factor(payment_type))))+
-  geom_bar(fill="Pink") + 
+  geom_bar() + #fill='Pink'
   theme_bw()+
   scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
   theme(axis.text.x = element_text(angle = 0),)+
@@ -343,15 +397,6 @@ ggplot(df_taxis_paid, aes(x=start_hour,y=congestion_surcharge,
   #geom_count(alpha=0.5)+
   scale_fill_brewer(palette="Set3")
 
-
-#FALTA ACABAR
-#y = ifelse(..count.. > nrow(df_taxis)*0.05, ..count.., NA)
-df_taxis %>% 
-  group_by(PULocationID) %>% 
-  mutate(freq = n()) %>% 
-  ungroup() %>% 
-  filter(freq > nrow(df_taxis)*0.01) %>%
-  select(-freq)
 
 ggplot(data = df_taxis,
        aes(axis1 = PULocationID, axis2 = DOLocationID)) +
