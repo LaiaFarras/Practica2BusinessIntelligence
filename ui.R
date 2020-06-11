@@ -28,35 +28,35 @@ shinyUI(fluidPage(
             radioButtons(inputId = "geom", label = "Tipo de grafico:",
                          choices = c("X Y (V. X e Y)" = "points",
                                      "Boxplot (V. cat + Y)" = "boxplot",
-                                     "Histograma (V. cat)"="histogram",
+                                     "Frecuencia (V. cat)"="histogram",
                                      "Jitter (V. X e Y)" = "jitter",
                                      "Count (V. X e Y)"="count"),
                                      selected = "X Y"),
-            
-            #CASO HISTOGRAMA
-            conditionalPanel(
-                condition='input$geom == "histogram"',
-                selectInput('x',"Panel x caso histograma",factvars,"None")
-                ),
-
-            #CASO PUNTOS
-            conditionalPanel(
-                condition='input$geom=="points"',
-                selectInput('x', 'Panel X caso puntos', numvars)
-            ),
+             # 
+             # #CASO HISTOGRAMA
+             # conditionalPanel(
+             #     condition="input$geom == 'histogram'",
+             #     selectInput('x',"Panel x caso histograma",factvars,"None")
+             #     ),
+             # 
+             # #CASO PUNTOS
+             # conditionalPanel(
+             #     condition='input$geom=="points"',
+             #     selectInput('x', 'Panel X caso puntos', numvars)
+             # ),
 
             # #CASO VARIABLES X E Y
             # conditionalPanel(
             #     condition="input$geom!='histogram'" & condition="input$geom!='boxplot'",
             #     selectInput('x', 'Variable X', numvars),
             #     selectInput('y', 'variable Y', numvars, numvars[2])
-            #     ),            
-            
+            #     ),
+
 
         
-                        # selectInput('x', 'Variable X', numvars),
+                        selectInput('x', 'Variable X', numvars),
                         selectInput('y', 'variable Y', numvars, numvars[2]),
-                        selectInput("color", "Variable categórica", factvars, "None"),
+                        selectInput("color", "Variable categórica / color distinto", factvars, "None"),
                         selectInput('facet', 'Clasificar en función de variable ', factvars),
                         sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
                         radioButtons(inputId = "method", label = "Método de regresión:",
