@@ -33,12 +33,14 @@ shinyUI(fluidPage(
                                      "Count (V. X e Y)"="count"),
                                      selected = "X Y"),   
             
-     
-     #Caso especial para cuando seleccionamos histograma
+            
+     #        grafico=eventReactive(input$geom, {
+     # 
+     # #Caso especial para cuando seleccionamos histograma
      #              if (input$geom=="histogram") {selectInput('x',"Selecciona variable",factvars,"None")}
-     #               else {selectInput('x', 'Selecciona variable X', numvars) 
-     #                   selectInput('y', 'Selecciona variable Y', numvars, numvars[2])},
-     #NO FUNCIONA! En el moment que li poso un if em falla tot el shiny
+     #               else {selectInput('x', 'Selecciona variable X', numvars)
+     #                   selectInput('y', 'Selecciona variable Y', numvars, numvars[2])}},
+     # #NO FUNCIONA! En el moment que li poso un if em falla tot el shiny
 
         
                         selectInput('x', 'Variable X', numvars),
@@ -57,6 +59,8 @@ shinyUI(fluidPage(
             mainPanel(
                 tabsetPanel(type = "tabs",
                             tabPanel("Gráficos", plotOutput("TaxisPlot")),
+                            # if (fallo=1) tabPanel("Gráficos", plotOutput("MensajeError"))
+                            # else tabPanel("Gráficos", plotOutput("TaxisPlot")),
                             tabPanel("Datos", dataTableOutput("TaxisTable"))
             )
         )
