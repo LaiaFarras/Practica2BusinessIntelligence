@@ -49,21 +49,20 @@ if(!require("GGally")) {
   library("GGally")
 }
 
-if(!require("ggalluvial")) {
-  install.packages("ggalluvial")
-  library("ggalluvial")
-}
-
 
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=100000)
+df_taxis=read.csv(file="df_taxis.csv")
 #Eliminate trips without distance
 df_taxis= filter(df_taxis, trip_distance > 0)
 #Total amount must be positive
 
 #Total amount can't be zero
 df_taxis= filter(df_taxis, total_amount > 0)
+str(df_taxis)
+
+#Number of passengers can't be zero
+df_taxis= filter(df_taxis, passenger_count > 0)
 str(df_taxis)
 
 #Importem només els que tenen propina i congestió
@@ -115,6 +114,7 @@ str(df_taxis)
 #df_taxis$start_job = as.Date(df_taxis$start_job)
 str(df_taxis$start_job)
 
+#PLOT 1
 df_taxis %>% 
   ggplot(aes(as.Date(start_job))) + 
   geom_freqpoly(binwidth = 1)+ # 86400 seconds = 1 day
@@ -122,20 +122,6 @@ df_taxis %>%
   xlab('Time y-m')+
   ylab('Number of trips')+
   labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
-
-#Adjust limits for the following graph
-# lims <- as.POSIXct(strptime(c("2019-03-01 00:00", "2019-03-03 00:00"), 
-#                             format = "%Y-%m-%d %H:%M"))
-# 
-# df_taxis %>% 
-#   ggplot(aes(as.Date(start_job))) + 
-#   geom_freqpoly(binwidth = 3600)+ # 86400 seconds = 1 day
-#   theme_bw()+
-#   scale_x_date(limits=as.Date(lims), breaks = date_breaks("day"),
-#                    labels=date_format("%y-%m-%d"))+
-#   xlab('Time y-m-d ')+
-#   ylab('Number of trips')+
-#   labs(title="RAW DATA TRIPS",subtitle="Time of each trip in data frame")
 
 #Outliers analysis
 
@@ -153,13 +139,14 @@ df_taxis = filter(df_taxis, total_amount > 0)
 
 
 #Relación entre la distancia y el precio a pagar
+#PLOT 2
 ggplot(data=df_taxis,aes(x=trip_distance,y=total_amount))+
   geom_point()+
   theme_bw()+
   labs(title="TOTAL AMOUNT - DISTANCE",subtitle="Comparison through scatter plot")+
   geom_smooth(method='lm') +
   xlim(0,50)+
-  xlab('Distance (milles)')+
+  xlab('Distance (miles)')+
   ylab('Total amount ($)')
 
 str(df_taxis$PULocationID)
@@ -171,7 +158,7 @@ PUStationID = PUStationID[PUStationID$freq > nrow(df_taxis)*0.01,]  #Only keep t
 #PUStationID$PULocationID = as.factor(PUStationID$PULocationID)
 #PUStationID = PUStationID %>% arrange(freq)
 
-
+#PLOT 3
 ggplot(PUStationID, aes(reorder(PULocationID,-freq),freq)) +
   geom_bar(stat='identity') + 
   theme_bw()+
@@ -183,6 +170,7 @@ ggplot(PUStationID, aes(reorder(PULocationID,-freq),freq)) +
 DOStationID = count(df_taxis,'DOLocationID')
 DOStationID = DOStationID[DOStationID$freq > nrow(df_taxis)*0.01,]
 
+#PLOT 4
 ggplot(DOStationID, aes(reorder(DOLocationID,-freq),freq)) +
   geom_bar(stat='identity') + 
   theme_bw()+
@@ -198,6 +186,7 @@ tip_location = df_taxis %>%
 
 high_tip = tip_location[tip_location$mean_tip > mean(tip_location$mean_tip)+sd(tip_location$mean_tip),]
 
+#PLOT 5
 ggplot(data=high_tip,aes(x=reorder(factor(PULocationID),-mean_tip),y=mean_tip))+
   geom_bar(stat='identity')+
   theme_bw()+
@@ -209,6 +198,7 @@ ggplot(data=high_tip,aes(x=reorder(factor(PULocationID),-mean_tip),y=mean_tip))+
 PUStationID = count(df_taxis,'PULocationID') #Count number of trips for each zone
 df_mean_tip=cbind(PUStationID, tip_location[,2])
 
+#PLOT 6
 ggplot(data=df_mean_tip, aes(x=freq,y=mean_tip, label=PULocationID))+
   geom_point()+
   geom_text(aes(label=ifelse(mean_tip>mean(mean_tip)*2 & freq > mean(freq),
@@ -224,10 +214,10 @@ mean_amount = df_taxis %>%
   dplyr::summarize(mean_amount = mean(total_amount, na.rm=TRUE))
 
 df_mean_amount=cbind(PUStationID, mean_amount[,2])
-
+#PLOT 7
 ggplot(data=df_mean_amount, aes(x=freq,y=mean_amount, label=PULocationID))+
   geom_point()+
-  geom_text(aes(label=ifelse(mean_amount>mean(mean_amount)*2 & freq > mean(freq),
+  geom_text(aes(label=ifelse(mean_amount>mean(mean_amount) & freq > mean(freq),
                              as.character(PULocationID),'')),hjust=-0.3, vjust=-0.3)+
   labs(title="BEST ZONES TO WORK FOR TIPS",
        subtitle="Comparing the demand for trips and the average amount paid")+
@@ -255,89 +245,69 @@ ggplot(data=df_price_mile, aes(x=freq,y=price_mile, label=PULocationID))+
 
 #SOBRECARGA POR CONGESTIÓN CON HORA
 #start_hour=as.numeric(df_taxis_congestion$start_hour)
+#PLOT 9
 df_taxis %>%
   filter(congestion_surcharge > 0) %>%
   ggplot(df_taxis, mapping=aes(start_hour,fill=factor(start_day))) +
     geom_bar()+
+    theme_bw()+
     scale_fill_manual(values=c("#003f5c","#374c80","#7a5195","#bc5090","#ef5675","#ff764a","#ffa600"),
                     breaks =c("1","2","3","4","5","6","7"),
-                    labels=c("Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"),
-                    name="Días de la semana")+
-                    labs(title="SOBRECARGA POR CONGESTIÓN",
-                    subtitle="Relación entre la sobrecarga por congestión y la hora",
-                    x="Hora de pick up",
-                    y="Frecuencia de sobrecarga")
-    theme_bw()+
+                    labels=c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"),
+                    name="Day of the week")+
+                    labs(title="CONGESTION",
+                    subtitle="Daytime graph comparing congestion in different days of the week",
+                    x="Pick up hour",
+                    y="Congestion frequency")
+    
     scale_fill_manual(values=c("#003f5c","#374c80","#7a5195","#bc5090","#ef5675","#ff764a","#ffa600"))
 
-#REVISAR! PROPOSTA PROPINES I ZONES I SOBRECÀRREGUES
-# ggplot(data=df_taxis,aes(x=PULocationID,y=tip_amount))+
-#   geom_point(color="Purple")+
-#   theme_bw()+
-#   labs(title="PRECIO - PICK UP POINT",subtitle="Relación entre el punto de PICK UP y la propina")+
-#   geom_smooth(method="lm",color="lightpink")
 
 #SOBRECARGA POR CONGESTIÓN CON HORA
 start_hour=as.numeric(df_taxis_congestion$start_hour)
 
-# ggplot(df_taxis_congestion, aes(start_hour,fill=factor(start_day))) +
-#  geom_bar()+
-#   scale_fill_manual(values=c("#003f5c","#374c80","#7a5195","#bc5090","#ef5675","#ff764a","#ffa600"),
-#                    # breaks =c("1","2","3","4","5","6","7"),
-#                     labels=c("Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"),
-#                     name="Días de la semana")+
-#   labs(title="SOBRECARGA POR CONGESTIÓN",subtitle="Relación entre la sobrecarga por congestión y la hora",
-#      x="Hora de pick up",
-#      y="Frecuencia de sobrecarga")
 
-# 
-# df_taxis %>% 
-#   ggplot(aes(x=start_job, y=congestion_surcharge)) + 
-#   geom_point()+ 
-#   scale_y_log10()+
-#   scale_x_datetime(limits=lims, breaks = date_breaks("hour"),
-#                    labels=date_format("%d %h:%m"))+
-#   theme_bw()+
-#   theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-#   xlab('Time y-m-d ')+
-#   ylab('Congestion surcharge')+
-#   labs(title="CONGESTION SURCHARGE")
-
+#PLOT 10
 #Numero de pasajeros por viaje
 ggplot(df_taxis, aes(fct_infreq(factor(passenger_count))))+
   geom_bar() + 
   theme_bw()+
+  scale_y_continuous(breaks=seq(0,140000,10000),labels=comma)+
   theme(axis.text.x = element_text(angle = 0))+
-  labs(x="Number of passengers",
+  labs(title="Classification of trips by number of passengers",
+       x="Number of passengers",
        y="Number of trips")
 
-
+#PLOT 11
 #ESTÁ MAL! NO DA INFORMACIÓN! Numero de pasajeros en función de la estación
 ggplot(data=df_taxis,aes(x=PULocationID,y=passenger_count))+
   geom_count(alpha=0.5)+ #color='Pink'
   theme_bw()+
-  labs(title="NÚMERO PASAJEROS",
-       subtitle = "Numero de pasajeros en función de la PICK UP location",
+  labs(title="NUMBER OF PASSENGERS",
+       subtitle = "Comparing passenger count on each taxi zone",
        x="Pick up location",
-       y="Numero de pasajeros")
+       y="Number of passengers per trip")
 
 #Tipos de pago
+#PLOT 12
 ggplot(df_taxis, aes(fct_infreq(factor(payment_type))))+
   geom_bar() + #fill='Pink'
   theme_bw()+
+  scale_y_continuous(breaks=seq(0,150000,25000),labels=comma)+
   scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
-  scale_fill_manual(values=cbbPalette)+
   theme(axis.text.x = element_text(angle = 0),)+
-  labs(title="TIPO DE PAGO",
-       subtitle="Distintos tipos de pago",
-       x="Tipo de pago",
-       y="Frecuencia")
+  labs(title="PAYMENT METHODS",
+       subtitle="Comparing the use of different payment methods",
+       x="Payment type",
+       y="Frecuency")
 
 
 #Numero de personas y tipo de pago
+#PLOT 13
 ggplot(data=df_taxis,mapping=aes(y=passenger_count,x=factor(payment_type)))+
   geom_count()+ #color=rainbow(23)
   theme_bw()+
+  scale_y_continuous(breaks=seq(1,6,1))+
   scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
   labs(title="PAYMENT TYPE",
        subtitle = "Comparing payment type and number of passengers",
@@ -346,9 +316,11 @@ ggplot(data=df_taxis,mapping=aes(y=passenger_count,x=factor(payment_type)))+
 
 
 #Cantidad pagada y tipo de pago 
+#PLOT 14
 ggplot(data=df_taxis,mapping=aes(y=total_amount,x=factor(payment_type)))+
   geom_violin(scale="area")+ #fill='aquamarine'
   theme_bw()+
+  ylim(0,100)+
   scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
   labs(title="PAYMENT TYPE",
        subtitle = "Distribution of payments",
@@ -357,6 +329,7 @@ ggplot(data=df_taxis,mapping=aes(y=total_amount,x=factor(payment_type)))+
 
 
 #Cantidad pagada y propina 
+#PLOT 15
 ggplot(data=df_taxis_paid,aes(x=total_amount,y=tip_amount))+
   geom_jitter(alpha=0.4)+  #color=lightpink
   theme_bw()+
@@ -364,13 +337,15 @@ ggplot(data=df_taxis_paid,aes(x=total_amount,y=tip_amount))+
   labs(title="CORRELATION",
        subtitle = "Tips against the total amount to pay",
        x="Total amount to pay ($)",
-       y="Tip")
+       y="Tip ($)")
 
 cor.test(df_taxis$total_amount, df_taxis$tip_amount, method = "pearson")
 
+#PLOT 16
 ggplot(data=df_taxis_paid,aes(x=trip_distance,y=tip_amount))+
   geom_point()+
   theme_bw()+
+  scale_y_continuous(breaks=seq(0,100,20))+
   geom_smooth(method='lm')+
   labs(title="CORRELATION",
        subtitle = "Tips against the trip distance",
@@ -380,38 +355,19 @@ ggplot(data=df_taxis_paid,aes(x=trip_distance,y=tip_amount))+
 cor.test(df_taxis$trip_distance, df_taxis$tip_amount, method = "pearson")
 
 # MODELO: PREDECIR PRECIO DEL VIAJE
-sum(is.na(df_taxis$total_amount))
-sum(is.na(df_taxis$passenger_count))
-sum(is.na(df_taxis$trip_distance))
-sum(is.na(df_taxis$start_hour))
-sum(is.na(df_taxis$start_day))
-
-df_taxis$passenger_count %>% drop_na(df_taxis$passenger_count)
-str(df_taxis$passenger_count)
-
-df %>% filter(!is.na(df_taxis$passenger_count))
-sum(is.na(df_taxis$passenger_count))
-
-modelo <- (lm(formula = total_amount ~ passenger_count + trip_distance +
-                start_hour + start_day , data = df_taxis))
-summary(modelo)
-
-
-##JA HO HE PUJAT A DALT!!
-ggplot(df_taxis_paid, aes(x=start_hour,y=congestion_surcharge,
-                     color=factor(start_day))) +
-  #geom_point()+
-  #geom_jitter()+
-  #geom_count(alpha=0.5)+
-  scale_fill_brewer(palette="Set3")
-
-
-ggplot(data = df_taxis,
-       aes(axis1 = PULocationID, axis2 = DOLocationID)) +
-  scale_x_discrete(limits = c("Pick-up", "Drop off")) +
-  xlab("Taxi Zones") +
-  geom_alluvium() +
-  geom_stratum()  +
-  ggtitle("Sankey diagram",
-          "Most frequency stations")
+# sum(is.na(df_taxis$total_amount))
+# sum(is.na(df_taxis$passenger_count))
+# sum(is.na(df_taxis$trip_distance))
+# sum(is.na(df_taxis$start_hour))
+# sum(is.na(df_taxis$start_day))
+# 
+# df_taxis$passenger_count %>% drop_na(df_taxis$passenger_count)
+# str(df_taxis$passenger_count)
+# 
+# df %>% filter(!is.na(df_taxis$passenger_count))
+# sum(is.na(df_taxis$passenger_count))
+# 
+# modelo <- (lm(formula = total_amount ~ passenger_count + trip_distance +
+#                 start_hour + start_day , data = df_taxis))
+# summary(modelo)
 
