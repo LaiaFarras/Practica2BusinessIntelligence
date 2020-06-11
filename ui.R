@@ -32,22 +32,10 @@ shinyUI(fluidPage(
                                      "Count"="count"),
                                      selected = "X Y"),
 
-             #CASO BARRAS
-             conditionalPanel(
-                 condition="input.geom == 'bar'",
-                 selectInput('x',"Variable x diagrama barras",factvars,"None"),
-                 selectInput('facet', 'Clasificar en función de variable ', factvars),
-                 radioButtons(inputId="fill",label="Color de relleno",
-                              choices=c("Rosa"="lightpink",
-                                        "Azul"="blue",
-                                        "Verde"="green",
-                                        "Rojo"="red"))),
-            
-
             #CASO BOXPLOT
             conditionalPanel(
                 condition="input.geom == 'boxplot'",
-                selectInput('x',"Variable x",factvars,"None"),
+                selectInput('xf',"Variable x",factvars,"None"),
                 selectInput('y', 'variable Y', numvars, numvars[10]),
                 selectInput('facet', 'Clasificar en función de variable ', factvars),
                 radioButtons(inputId="fill",label="Color de relleno",
@@ -55,23 +43,33 @@ shinyUI(fluidPage(
                                        "Azul"="blue",
                                        "Verde"="green",
                                        "Rojo"="red"))),
-  
+   
             
+            #CASO BARRAS
+             conditionalPanel(
+                 condition="input.geom == 'bar'",
+                 selectInput('xf',"Variable x diagrama barras",factvars,"None"),
+                 selectInput('facet', 'Clasificar en función de variable ', factvars),
+                 radioButtons(inputId="fill",label="Color de relleno",
+                              choices=c("Rosa"="lightpink",
+                                        "Azul"="blue",
+                                        "Verde"="green",
+                                        "Rojo"="red"))),
+
             
              #CASO PUNTOS
              conditionalPanel(
                  condition='input.geom=="points"',
                  selectInput('x', 'Variable X', numvars),
                  selectInput('y', 'variable Y', numvars, numvars[10]),
-                 selectInput("color", "Color de la variable", factvars, "None"),
+                 selectInput('color', "Color de la variable", factvars, "None"),
                  selectInput('facet', 'Clasificar en función de variable ', factvars),
-                 sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
+                 sliderInput('alpha', "Transparencia", min = 0, max = 1, value = 0.8),
                  radioButtons(inputId = "method", label = "Método de regresión:",
                               choices = c("None" = "None",
                                           "Simple Linear Regression" = "lm",
                                           "Local Regression" = "loess"),
                               selected = "None")),
-            
             
 
             #CASO JITTER
@@ -79,9 +77,9 @@ shinyUI(fluidPage(
                 condition='input.geom=="jitter"',
                 selectInput('x', 'Variable X', numvars),
                 selectInput('y', 'variable Y', numvars, numvars[10]),
-                selectInput("color", "Color de la variable", factvars, "None"),
+                selectInput('color', "Color de la variable", factvars, "None"),
                 selectInput('facet', 'Clasificar en función de variable ', factvars),
-                sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
+                sliderInput('alpha', "Transparencia", min = 0, max = 1, value = 0.8),
                 radioButtons(inputId = "method", label = "Método de regresión:",
                              choices = c("None" = "None",
                                          "Simple Linear Regression" = "lm",

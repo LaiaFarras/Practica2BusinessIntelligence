@@ -60,31 +60,29 @@ shinyServer(function(input, output) {
         
         # En función del tipo de gráfico elegido se hace un geom_xxx y otro
         if(input$geom == "points") {
-            chart <- chart + aes_string(x = input$x, y = input$y) + geom_point(alpha = input$alpha)
+            chart <- chart + aes_string(x = input$x, y = input$y) + geom_point(fill=input$fill)
         } else if(input$geom == "boxplot") {
-            chart <- chart + aes_string(x = input$x, y = input$y) + geom_violin(fill=input$fill)
+            chart <- chart + aes_string(x = input$xf, y = input$y) + geom_boxplot(fill=input$fill)
         } else if(input$geom == "bar") {
-            chart <- chart+ aes_string(x=input$x) + geom_bar(fill=input$fill)
+            chart <- chart+ aes_string(x=input$xf) + geom_bar(fill=input$fill)
         } else if(input$geom == "jitter") {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_jitter(alpha = input$alpha)
         } else if(input$geom == "count") {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_count(alpha = input$alpha)
         } 
          
-        # if(input$geom!="boxplot")
-        #     if(input$geom!="bar")
-                if(input$color != "None")
-                    chart <- chart + aes_string(color=input$color)
+
+        if(input$color != "None")
+            chart <- chart + aes_string(color=input$color)
 
          if(input$facet != "None")
              chart <- chart + facet_wrap(c(input$facet))
          
-         
-         # if(input$geom!="boxplot")
-         #     if(input$geom!="bar")
-                 if(input$method != "None")
-                     chart <- chart + geom_smooth(method=input$method)
+
+         if(input$method != "None")
+             chart <- chart + geom_smooth(method=input$method)
         
+         
         chart <- chart +theme_bw()
         
         
@@ -103,7 +101,7 @@ shinyServer(function(input, output) {
         print(chart)
         
     })
-    
+
 
     output$TaxisPlot <- renderPlot({
         DrawChart()
