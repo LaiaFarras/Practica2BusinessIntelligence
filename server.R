@@ -30,8 +30,14 @@ if(!require("lubridate")) {
 
 
 #Importamos la base de datos
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000000)
-df_taxis=sample_n(df_taxis,size=20000)
+df_taxis=read.csv(file="df_taxis.csv")
+df_taxis=filter(df_taxis,total_amount<10000)
+df_taxis=filter(df_taxis,total_amount>0)
+df_taxis=filter(df_taxis,trip_distance>0)
+df_taxis=filter(df_taxis,passenger_count>0)
+df_taxis=filter(df_taxis,congestion_surcharge>0)
+
+
 
 #Creamos las variables nuevas
 start_job = mdy_hms(df_taxis$tpep_pickup_datetime)
