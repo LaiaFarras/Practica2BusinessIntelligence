@@ -9,14 +9,12 @@
 library(shiny); library(ggplot2)
 
 numvars <- c("trip_distance","PULocationID","DOLocationID","fare_amount","extra","mta_tax","tip_amount","tolls_amount","improvement_surcharge","total_amount","congestion_surcharge","start_hour","passenger_count")
-factvars <- c("None","VendorID","RatecodeID","payment_type","passenger_count","start_day")
+factvars <- c("None","VendorID","payment_type","passenger_count","start_day")
 
 
 
 shinyUI(fluidPage(
     titlePanel("Taxis de NYC"),
-    # headerPanel("Con esta interfaz podrás analizar los datos de la base de datos sobre los taxis de Nueva York"),
-    colores=0,
 
     # Escull el layout
     sidebarLayout(
@@ -50,8 +48,13 @@ shinyUI(fluidPage(
             conditionalPanel(
                 condition="input.geom == 'boxplot'",
                 selectInput('x',"Variable x",factvars,"None"),
-                selectInput('y', 'variable Y', numvars, numvars[2]),
-                selectInput('facet', 'Clasificar en función de variable ', factvars)),
+                selectInput('y', 'variable Y', numvars, numvars[10]),
+                selectInput('facet', 'Clasificar en función de variable ', factvars),
+                radioButtons(inputId="fill",label="Color de relleno",
+                             choices=c("Rosa"="lightpink",
+                                       "Azul"="blue",
+                                       "Verde"="green",
+                                       "Rojo"="red"))),
   
             
             
@@ -59,7 +62,7 @@ shinyUI(fluidPage(
              conditionalPanel(
                  condition='input.geom=="points"',
                  selectInput('x', 'Variable X', numvars),
-                 selectInput('y', 'variable Y', numvars, numvars[2]),
+                 selectInput('y', 'variable Y', numvars, numvars[10]),
                  selectInput("color", "Color de la variable", factvars, "None"),
                  selectInput('facet', 'Clasificar en función de variable ', factvars),
                  sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
@@ -75,7 +78,7 @@ shinyUI(fluidPage(
             conditionalPanel(
                 condition='input.geom=="jitter"',
                 selectInput('x', 'Variable X', numvars),
-                selectInput('y', 'variable Y', numvars, numvars[2]),
+                selectInput('y', 'variable Y', numvars, numvars[10]),
                 selectInput("color", "Color de la variable", factvars, "None"),
                 selectInput('facet', 'Clasificar en función de variable ', factvars),
                 sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
@@ -89,7 +92,7 @@ shinyUI(fluidPage(
             conditionalPanel(
                 condition='input.geom=="count"',
                 selectInput('x', 'Variable X', numvars),
-                selectInput('y', 'variable Y', numvars, numvars[2]),
+                selectInput('y', 'variable Y', numvars, numvars[10]),
                 selectInput("color", "Color de la variable", factvars, "None"),
                 selectInput('facet', 'Clasificar en función de variable ', factvars),
                 sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),

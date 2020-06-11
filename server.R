@@ -62,7 +62,7 @@ shinyServer(function(input, output) {
         if(input$geom == "points") {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_point(alpha = input$alpha)
         } else if(input$geom == "boxplot") {
-            chart <- chart + aes_string(x = input$x, y = input$y) + geom_boxplot()
+            chart <- chart + aes_string(x = input$x, y = input$y) + geom_violin(fill=input$fill)
         } else if(input$geom == "bar") {
             chart <- chart+ aes_string(x=input$x) + geom_bar(fill=input$fill)
         } else if(input$geom == "jitter") {
@@ -71,8 +71,8 @@ shinyServer(function(input, output) {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_count(alpha = input$alpha)
         } 
          
-        if(input$geom!="boxplot")
-            if(input$geom!="bar")
+        # if(input$geom!="boxplot")
+        #     if(input$geom!="bar")
                 if(input$color != "None")
                     chart <- chart + aes_string(color=input$color)
 
@@ -80,8 +80,8 @@ shinyServer(function(input, output) {
              chart <- chart + facet_wrap(c(input$facet))
          
          
-         if(input$geom!="boxplot")
-             if(input$geom!="bar")
+         # if(input$geom!="boxplot")
+         #     if(input$geom!="bar")
                  if(input$method != "None")
                      chart <- chart + geom_smooth(method=input$method)
         
