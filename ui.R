@@ -15,8 +15,8 @@ factvars <- c("None","VendorID","RatecodeID","payment_type","passenger_count","s
 
 shinyUI(fluidPage(
     titlePanel("Taxis de NYC"),
-    
-    
+    # headerPanel("Con esta interfaz podrás analizar los datos de la base de datos sobre los taxis de Nueva York"),
+
     # Escull el layout
     sidebarLayout(
         
@@ -31,19 +31,30 @@ shinyUI(fluidPage(
                                      "Histograma (V. cat)"="histogram",
                                      "Jitter (V. X e Y)" = "jitter",
                                      "Count (V. X e Y)"="count"),
-                                     selected = "X Y"),   
+                                     selected = "X Y"),
             
+            #CASO HISTOGRAMA
+            conditionalPanel(
+                condition='input$geom == "histogram"',
+                selectInput('x',"Panel x caso histograma",factvars,"None")
+                ),
+
+            #CASO PUNTOS
+            conditionalPanel(
+                condition='input$geom=="points"',
+                selectInput('x', 'Panel X caso puntos', numvars)
+            ),
+
+            # #CASO VARIABLES X E Y
+            # conditionalPanel(
+            #     condition="input$geom!='histogram'" & condition="input$geom!='boxplot'",
+            #     selectInput('x', 'Variable X', numvars),
+            #     selectInput('y', 'variable Y', numvars, numvars[2])
+            #     ),            
             
-     #        grafico=eventReactive(input$geom, {
-     # 
-     # #Caso especial para cuando seleccionamos histograma
-     #              if (input$geom=="histogram") {selectInput('x',"Selecciona variable",factvars,"None")}
-     #               else {selectInput('x', 'Selecciona variable X', numvars)
-     #                   selectInput('y', 'Selecciona variable Y', numvars, numvars[2])}},
-     # #NO FUNCIONA! En el moment que li poso un if em falla tot el shiny
 
         
-                        selectInput('x', 'Variable X', numvars),
+                        # selectInput('x', 'Variable X', numvars),
                         selectInput('y', 'variable Y', numvars, numvars[2]),
                         selectInput("color", "Variable categórica", factvars, "None"),
                         selectInput('facet', 'Clasificar en función de variable ', factvars),
@@ -51,7 +62,7 @@ shinyUI(fluidPage(
                         radioButtons(inputId = "method", label = "Método de regresión:",
                           choices = c("None" = "None",
                                       "Simple Linear Regression" = "lm",
-                                      "Local Regression" = "loess"), 
+                                      "Local Regression" = "loess"),
                           selected = "None")
             ),
             
