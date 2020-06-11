@@ -44,11 +44,6 @@ if(!require("ggraph")) {
   library("ggraph")
 }
 
-if(!require("GGally")) {
-  install.packages("GGally")
-  library("GGally")
-}
-
 
 ### LECTURA DEL ARCHIVO ###
 #Data Frame Yellow Taxis 2019 New York
