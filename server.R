@@ -27,6 +27,8 @@ if(!require("lubridate")) {
     library("lubridate")
 }
 
+
+
 #Importamos la base de datos
 df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000000)
 df_taxis=sample_n(df_taxis,size=20000)
@@ -45,6 +47,7 @@ df_taxis$store_and_fwd_flag = NULL
 df_taxis$start_job = NULL
 df_taxis$finish_job = NULL
 
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
     dataset <- reactive({
@@ -54,11 +57,13 @@ shinyServer(function(input, output) {
     DrawChart <- eventReactive(input$start, {
         chart <- ggplot(dataset()) 
         
+        
+        # En función del tipo de gráfico elegido se hace un geom_xxx y otro
         if(input$geom == "points") {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_point(alpha = input$alpha)
         } else if(input$geom == "boxplot") {
             chart <- chart + aes_string(x = input$color, y = input$y) + geom_boxplot()
-        } else if(input$geom == "histogram") {
+        } else if(input$geom == "bar") {
             chart <- chart+ aes_string(x=input$color) + geom_bar()
         } else if(input$geom == "jitter") {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_jitter(alpha = input$alpha)
@@ -78,24 +83,27 @@ shinyServer(function(input, output) {
         chart <- chart +theme_bw()
         
         
-        #Editem l'eix X per mostrar la informació discreta
-        #NO EM FUNCIONA!!
-        if(input$geom=="histogram" & input$color=="payment_type")
-            chart<-chart+scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
-            xlab("Tipos de pago")
+        #LO QUE HEMOS INTENTADO HACER AQUÍ NO FUNCIONA CON EL SHINY
+        #Queríamos cambiar los numeros por letras
+        #Una posible solución sería crear una columna nueva a la base de datos sustituyendo esta
         
-        if(input$geom=="histogram" & input$color=="start_day")
-            chart<-chart+scale_x_discrete(labels=c("1"="Domingo","2"="Lunes","3"="Martes","4"="Miércoles","5"="Jueves","6"="Viernes","7"="Sábado"))+
-            xlab("Días de la semana")
-
-
+            # if(input$geom=="bar" & input$color=="payment_type")
+            #     chart<-chart+scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
+            #     xlab("Tipos de pago")
+            # 
+            # if(input$geom=="bar" & input$color=="start_day")
+            #     chart<-chart+scale_x_discrete(labels=c("1"="Domingo","2"="Lunes","3"="Martes","4"="Miércoles","5"="Jueves","6"="Viernes","7"="Sábado"))+
+            #     xlab("Días de la semana")
+        
         print(chart)
         
     })
     
+
     output$TaxisPlot <- renderPlot({
         DrawChart()
     }, width = 1200, height = 720)
     
     output$TaxisTable <- renderDataTable(dataset())
 })
+
