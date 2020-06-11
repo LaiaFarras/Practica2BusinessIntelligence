@@ -6,37 +6,60 @@
 #
 #    http://shiny.rstudio.com/
 #
-library(shiny)
+library(shiny); library(ggplot2)
 
-df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=200000)
+numvars <- c("trip_distance","PULocationID","DOLocationID","fare_amount","extra","mta_tax","tip_amount","tolls_amount","improvement_surcharge","total_amount","congestion_surcharge","start_hour","passenger_count")
+factvars <- c("None","VendorID","RatecodeID","payment_type","passenger_count","start_day")
 
-# Define UI for application that draws a histogram
+
+
 shinyUI(fluidPage(
+    titlePanel("Taxis de NYC"),
     
-    # Application title
-    titlePanel("TLC New York Analysis"),
-
-    # Sidebar with a slider input for number of bins
-    sidebarPanel(
-        selectInput("category", "Select a variable:",
-                    choices=c("congestion_surcharge",
-                              "trip_distance",
-                              "total_amount")),
+    
+    # Escull el layout
+    sidebarLayout(
         
-        dateRangeInput("daterange3", "Select the date range:",
-                       start  = "2019-08-01",
-                       end    = "2020-01-31",
-                       min    = "2019-01-01",
-                       max    = "2020-01-31",
-                       format = "mm/dd/yy",
-                       separator = " - "),
-    ),
+        # Panell lateral
+        sidebarPanel(
+            actionButton("start", "Calculate"),
+            sliderInput("sampleSize", "Tamaño de la muestra",
+                        value = 5000, min = 1000, max = nrow(df_taxis), step = 500, round = 0),
+            radioButtons(inputId = "geom", label = "Tipo de grafico:",
+                         choices = c("X Y (V. X e Y)" = "points",
+                                     "Boxplot (V. cat + Y)" = "boxplot",
+                                     "Histograma (V. cat)"="histogram",
+                                     "Jitter (V. X e Y)" = "jitter",
+                                     "Count (V. X e Y)"="count"),
+                                     selected = "X Y"),   
+            
+     
+     #Caso especial para cuando seleccionamos histograma
+     #              if (input$geom=="histogram") {selectInput('x',"Selecciona variable",factvars,"None")}
+     #               else {selectInput('x', 'Selecciona variable X', numvars) 
+     #                   selectInput('y', 'Selecciona variable Y', numvars, numvars[2])},
+     #NO FUNCIONA! En el moment que li poso un if em falla tot el shiny
 
-        # Show a plot of the generated distribution
-        mainPanel(
-            h1("Dashboard"),
-            p("text",
-            plotOutput("graph")
+        
+                        selectInput('x', 'Variable X', numvars),
+                        selectInput('y', 'variable Y', numvars, numvars[2]),
+                        selectInput("color", "Variable categórica", factvars, "None"),
+                        selectInput('facet', 'Clasificar en función de variable ', factvars),
+                        sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
+                        radioButtons(inputId = "method", label = "Método de regresión:",
+                          choices = c("None" = "None",
+                                      "Simple Linear Regression" = "lm",
+                                      "Local Regression" = "loess"), 
+                          selected = "None")
+            ),
+            
+            # Panell central
+            mainPanel(
+                tabsetPanel(type = "tabs",
+                            tabPanel("Gráficos", plotOutput("TaxisPlot")),
+                            tabPanel("Datos", dataTableOutput("TaxisTable"))
+            )
         )
     )
 ))
+
