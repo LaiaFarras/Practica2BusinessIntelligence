@@ -27,6 +27,8 @@ if(!require("lubridate")) {
     library("lubridate")
 }
 
+
+
 #Importamos la base de datos
 df_taxis=read.csv(file="2019_Yellow_Taxi_Trip_Data.csv", nrows=1000000)
 df_taxis=sample_n(df_taxis,size=20000)
@@ -44,6 +46,8 @@ df_taxis$tpep_dropoff_datetime = NULL
 df_taxis$store_and_fwd_flag = NULL
 df_taxis$start_job = NULL
 df_taxis$finish_job = NULL
+
+fallo=0
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -88,10 +92,19 @@ shinyServer(function(input, output) {
             chart<-chart+scale_x_discrete(labels=c("1"="Domingo","2"="Lunes","3"="Martes","4"="Miércoles","5"="Jueves","6"="Viernes","7"="Sábado"))+
             xlab("Días de la semana")
 
-
         print(chart)
         
     })
+    
+    
+    
+    #Casos en els que ens dona error
+    if (input$geom=="histogram" & input$color="None"){
+        fallo=1
+        output$MensajeError=renderText("Debes introducir tu variable categórica")
+        }
+    
+    
     
     output$TaxisPlot <- renderPlot({
         DrawChart()
