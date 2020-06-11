@@ -28,14 +28,14 @@ shinyUI(fluidPage(
             radioButtons(inputId = "geom", label = "Tipo de grafico:",
                          choices = c("X Y (V. X e Y)" = "points",
                                      "Boxplot (V. cat + Y)" = "boxplot",
-                                     "Frecuencia (V. cat)"="histogram",
+                                     "Frecuencia (V. cat)"="bar",
                                      "Jitter (V. X e Y)" = "jitter",
                                      "Count (V. X e Y)"="count"),
                                      selected = "X Y"),
              # 
              # #CASO HISTOGRAMA
              # conditionalPanel(
-             #     condition="input$geom == 'histogram'",
+             #     condition="input$geom == 'bar'",
              #     selectInput('x',"Panel x caso histograma",factvars,"None")
              #     ),
              # 
@@ -47,7 +47,7 @@ shinyUI(fluidPage(
 
             # #CASO VARIABLES X E Y
             # conditionalPanel(
-            #     condition="input$geom!='histogram'" & condition="input$geom!='boxplot'",
+            #     condition="input$geom!='bar'" & condition="input$geom!='boxplot'",
             #     selectInput('x', 'Variable X', numvars),
             #     selectInput('y', 'variable Y', numvars, numvars[2])
             #     ),
