@@ -64,7 +64,7 @@ shinyServer(function(input, output) {
         } else if(input$geom == "boxplot") {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_boxplot()
         } else if(input$geom == "bar") {
-            chart <- chart+ aes_string(x=input$x) + geom_bar()
+            chart <- chart+ aes_string(x=input$x) + geom_bar(fill=input$fill)
         } else if(input$geom == "jitter") {
             chart <- chart + aes_string(x = input$x, y = input$y) + geom_jitter(alpha = input$alpha)
         } else if(input$geom == "count") {

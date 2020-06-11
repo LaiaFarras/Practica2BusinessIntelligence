@@ -38,7 +38,12 @@ shinyUI(fluidPage(
              conditionalPanel(
                  condition="input.geom == 'bar'",
                  selectInput('x',"Variable x diagrama barras",factvars,"None"),
-                 selectInput('facet', 'Clasificar en función de variable ', factvars)),
+                 selectInput('facet', 'Clasificar en función de variable ', factvars),
+                 radioButtons(inputId="fill",label="Color de relleno",
+                              choices=c("Rosa"="lightpink",
+                                        "Azul"="blue",
+                                        "Verde"="green",
+                                        "Rojo"="red"))),
             
 
             #CASO BOXPLOT
