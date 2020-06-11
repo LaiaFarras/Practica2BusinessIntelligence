@@ -47,7 +47,7 @@ df_taxis$store_and_fwd_flag = NULL
 df_taxis$start_job = NULL
 df_taxis$finish_job = NULL
 
-fallo=0
+# fallo=0
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -98,11 +98,11 @@ shinyServer(function(input, output) {
     
     
     
-    #Casos en els que ens dona error
-    if (input$geom=="histogram" & input$color="None"){
-        fallo=1
-        output$MensajeError=renderText("Debes introducir tu variable categórica")
-        }
+    # #Casos en els que ens dona error
+    # if (input$geom=="histogram" & input$color="None"){
+    #     fallo=1
+    #     output$MensajeError=renderText("Debes introducir tu variable categórica")
+    #     }
     
     
     

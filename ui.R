@@ -59,8 +59,6 @@ shinyUI(fluidPage(
             mainPanel(
                 tabsetPanel(type = "tabs",
                             tabPanel("Gráficos", plotOutput("TaxisPlot")),
-                            # if (fallo=1) tabPanel("Gráficos", plotOutput("MensajeError"))
-                            # else tabPanel("Gráficos", plotOutput("TaxisPlot")),
                             tabPanel("Datos", dataTableOutput("TaxisTable"))
             )
         )
