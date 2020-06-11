@@ -183,7 +183,7 @@ high_tip = tip_location[tip_location$mean_tip > mean(tip_location$mean_tip)+sd(t
 
 #PLOT 5
 ggplot(data=high_tip,aes(x=reorder(factor(PULocationID),-mean_tip),y=mean_tip))+
-  geom_bar(stat='identity')+
+  geom_bar(stat='identity',fill="Pink",col="grey")+
   theme_bw()+
   labs(title="BEST ZONES FOR TIPS",subtitle="Showing zones that are above mean + sigma")+
   xlab('Taxi Zones')+
@@ -264,9 +264,9 @@ start_hour=as.numeric(df_taxis_congestion$start_hour)
 
 #PLOT 10
 #Numero de pasajeros por viaje
-ggplot(df_taxis, aes(fct_infreq(factor(passenger_count))))+
+ggplot(df_taxis, aes(fct_infreq(factor(passenger_count)),fill=factor(VendorID)))+
   geom_bar() + 
-  theme_bw()+
+  theme_minimal()+
   scale_y_continuous(breaks=seq(0,140000,10000),labels=comma)+
   theme(axis.text.x = element_text(angle = 0))+
   labs(title="Classification of trips by number of passengers",
@@ -312,9 +312,9 @@ ggplot(data=df_taxis,mapping=aes(y=passenger_count,x=factor(payment_type)))+
 
 #Cantidad pagada y tipo de pago 
 #PLOT 14
-ggplot(data=df_taxis,mapping=aes(y=total_amount,x=factor(payment_type)))+
+ggplot(data=df_taxis,mapping=aes(y=total_amount,x=factor(payment_type),fill=factor(VendorID)))+
   geom_violin(scale="area")+ #fill='aquamarine'
-  theme_bw()+
+  theme_minimal()+
   ylim(0,100)+
   scale_x_discrete(labels=c("1"="Credit card","2"="Cash","3"="No charge","4"="Dispute","5"="Unknown","6"="Voided trip"))+
   labs(title="PAYMENT TYPE",
