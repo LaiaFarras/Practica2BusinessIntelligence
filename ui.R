@@ -16,6 +16,7 @@ factvars <- c("None","VendorID","RatecodeID","payment_type","passenger_count","s
 shinyUI(fluidPage(
     titlePanel("Taxis de NYC"),
     # headerPanel("Con esta interfaz podrás analizar los datos de la base de datos sobre los taxis de Nueva York"),
+    colores=0,
 
     # Escull el layout
     sidebarLayout(
@@ -26,44 +27,73 @@ shinyUI(fluidPage(
             sliderInput("sampleSize", "Tamaño de la muestra",
                         value = 5000, min = 1000, max = nrow(df_taxis), step = 500, round = 0),
             radioButtons(inputId = "geom", label = "Tipo de grafico:",
-                         choices = c("X Y (V. X e Y)" = "points",
-                                     "Boxplot (V. cat + Y)" = "boxplot",
-                                     "Frecuencia (V. cat)"="bar",
-                                     "Jitter (V. X e Y)" = "jitter",
-                                     "Count (V. X e Y)"="count"),
+                         choices = c("X Y" = "points",
+                                     "Boxplot" = "boxplot",
+                                     "Frecuencia"="bar",
+                                     "Jitter" = "jitter",
+                                     "Count"="count"),
                                      selected = "X Y"),
-             # 
-             # #CASO HISTOGRAMA
-             # conditionalPanel(
-             #     condition="input$geom == 'bar'",
-             #     selectInput('x',"Panel x caso histograma",factvars,"None")
-             #     ),
-             # 
-             # #CASO PUNTOS
-             # conditionalPanel(
-             #     condition='input$geom=="points"',
-             #     selectInput('x', 'Panel X caso puntos', numvars)
-             # ),
 
-            # #CASO VARIABLES X E Y
-            # conditionalPanel(
-            #     condition="input$geom!='bar'" & condition="input$geom!='boxplot'",
-            #     selectInput('x', 'Variable X', numvars),
-            #     selectInput('y', 'variable Y', numvars, numvars[2])
-            #     ),
+             #CASO BARRAS
+             conditionalPanel(
+                 condition="input.geom == 'bar'",
+                 selectInput('x',"Variable x diagrama barras",factvars,"None"),
+                 selectInput('facet', 'Clasificar en función de variable ', factvars)),
+            
 
+            #CASO BOXPLOT
+            conditionalPanel(
+                condition="input.geom == 'boxplot'",
+                selectInput('x',"Variable x",factvars,"None"),
+                selectInput('y', 'variable Y', numvars, numvars[2]),
+                selectInput('facet', 'Clasificar en función de variable ', factvars)),
+  
+            
+            
+             #CASO PUNTOS
+             conditionalPanel(
+                 condition='input.geom=="points"',
+                 selectInput('x', 'Variable X', numvars),
+                 selectInput('y', 'variable Y', numvars, numvars[2]),
+                 selectInput("color", "Color de la variable", factvars, "None"),
+                 selectInput('facet', 'Clasificar en función de variable ', factvars),
+                 sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
+                 radioButtons(inputId = "method", label = "Método de regresión:",
+                              choices = c("None" = "None",
+                                          "Simple Linear Regression" = "lm",
+                                          "Local Regression" = "loess"),
+                              selected = "None")),
+            
+            
 
-        
-                        selectInput('x', 'Variable X', numvars),
-                        selectInput('y', 'variable Y', numvars, numvars[2]),
-                        selectInput("color", "Variable categórica / color distinto", factvars, "None"),
-                        selectInput('facet', 'Clasificar en función de variable ', factvars),
-                        sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
-                        radioButtons(inputId = "method", label = "Método de regresión:",
-                          choices = c("None" = "None",
-                                      "Simple Linear Regression" = "lm",
-                                      "Local Regression" = "loess"),
-                          selected = "None")
+            #CASO JITTER
+            conditionalPanel(
+                condition='input.geom=="jitter"',
+                selectInput('x', 'Variable X', numvars),
+                selectInput('y', 'variable Y', numvars, numvars[2]),
+                selectInput("color", "Color de la variable", factvars, "None"),
+                selectInput('facet', 'Clasificar en función de variable ', factvars),
+                sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
+                radioButtons(inputId = "method", label = "Método de regresión:",
+                             choices = c("None" = "None",
+                                         "Simple Linear Regression" = "lm",
+                                         "Local Regression" = "loess"),
+                             selected = "None")),
+            
+            #CASO COUNT
+            conditionalPanel(
+                condition='input.geom=="count"',
+                selectInput('x', 'Variable X', numvars),
+                selectInput('y', 'variable Y', numvars, numvars[2]),
+                selectInput("color", "Color de la variable", factvars, "None"),
+                selectInput('facet', 'Clasificar en función de variable ', factvars),
+                sliderInput("alpha", "Transparencia", min = 0, max = 1, value = 0.8),
+                radioButtons(inputId = "method", label = "Método de regresión:",
+                             choices = c("None" = "None",
+                                         "Simple Linear Regression" = "lm",
+                                         "Local Regression" = "loess"),
+                             selected = "None")),
+
             ),
             
             # Panell central
